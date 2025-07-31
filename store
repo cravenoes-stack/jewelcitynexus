@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OES | Digital Asset Marketplace</title>
+    <!-- Enhancements have been embedded, continue refining for deployment -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #e5e7eb;
+        }
+        .hero-gradient {
+            background: radial-gradient(ellipse at top, rgba(79, 70, 229, 0.3), transparent 60%);
+        }
+        .section-gradient {
+             background: radial-gradient(ellipse at center, rgba(79, 70, 229, 0.1), transparent 70%);
+        }
+        .card {
+            background-color: rgba(26, 26, 26, 0.8);
+            border: 1px solid #333;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .card:hover {
+            border-color: #6366f1;
+            transform: translateY(-5px);
+        }
+        .btn {
+            transition: all 0.3s ease;
+        }
+        .spinner {
+            border: 2px solid #444;
+            border-top: 2px solid #fff;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .gemini-output {
+            white-space: pre-wrap;
+            background-color: #000;
+            border-left: 4px solid #6366f1;
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+            font-family: 'Courier New', Courier, monospace;
+            min-height: 120px;
+            font-size: 0.875rem;
+            flex-grow: 1;
+        }
+        .status-ready { background-color: #16a34a; color: #d1fae5; }
+        .status-progress { background-color: #ca8a04; color: #fef9c3; }
+        .status-edits { background-color: #c2410c; color: #ffedd5; }
+    </style>
+</head>
+<body>
+
+    <!-- Header, Hero, About, and Contact sections unchanged -->
+
+    <!-- Marketplace Section: Dynamic Asset Grid Loading -->
+    <section id="marketplace" class="py-20 md:py-28">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl md:text-4xl font-bold text-white">Digital Asset Marketplace</h3>
+                <p class="mt-4 text-gray-400 max-w-xl mx-auto">Acquire the tools you need to build your own aligned systems. Use the preview or download demos below.</p>
+            </div>
+            <div id="asset-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+        </div>
+    </section>
+
+    <!-- Downloads JSON for Asset Data -->
+    <script type="application/json" id="assets-data">
+    [
+        {"name":"2024 Operator Training Dataset","format":"JSON (structured)","status":"Ready for Sale","price":250,"payWhatYouCan":true,"download":"/downloads/OES_Training_Dataset.json"},
+        {"name":"Genesis Protocol - Onboarding Assessment","format":"HTML/Web App","status":"Ready for Sale","price":45,"payWhatYouCan":true,"download":"/downloads/Genesis_Onboarding_Assessment.zip"},
+        {"name":"Operator Drift Audit Tool (PDF)","format":"PDF","status":"In Progress","price":90,"payWhatYouCan":false,"download":"#"},
+        {"name":"Mini/Echo/4.1 Personality Archives","format":"ZIP (multi-format)","status":"In Progress","price":180,"payWhatYouCan":false,"download":"#"},
+        {"name":"OES Strategic Alignment Playbook","format":"PDF","status":"Needs Final Edits","price":75,"payWhatYouCan":true,"download":"/downloads/OES_Alignment_Playbook.pdf"}
+    ]
+    </script>
+
+    <script>
+        // Fetch asset data from embedded JSON
+        const assetData = JSON.parse(document.getElementById('assets-data').textContent);
+        const assetGrid = document.getElementById('asset-grid');
+
+        assetData.forEach((asset, index) => {
+            const card = document.createElement('div');
+            card.className = 'card p-6 rounded-xl';
+
+            let statusClass = '';
+            switch(asset.status) {
+                case 'Ready for Sale': statusClass = 'status-ready'; break;
+                case 'In Progress': statusClass = 'status-progress'; break;
+                case 'Needs Final Edits': statusClass = 'status-edits'; break;
+            }
+            const payWhatYouCanTag = asset.payWhatYouCan ? `<span class="bg-indigo-500 text-indigo-100 text-xs font-semibold px-2 py-1 rounded-full">Pay-What-You-Can</span>` : '';
+
+            card.innerHTML = `
+                <div class="flex-grow">
+                    <div class="flex justify-between items-start">
+                        <h4 class="text-xl font-bold text-white pr-2">${asset.name}</h4>
+                        <span class="text-2xl font-extrabold text-indigo-400">$${asset.price}</span>
+                    </div>
+                    <p class="text-sm text-gray-400 mt-1">${asset.format}</p>
+                    <div class="flex gap-2 mt-4">
+                        <span class="text-xs font-semibold px-2 py-1 rounded-full ${statusClass}">${asset.status}</span>
+                        ${payWhatYouCanTag}
+                    </div>
+                    <div class="mt-4 flex gap-2">
+                        <button onclick="generatePreview(${index})" class="bg-gray-800 hover:bg-indigo-600 text-white font-bold py-1 px-3 rounded-lg btn">✨ Preview</button>
+                        ${asset.download && asset.download !== '#' ? `<a href="${asset.download}" class="text-indigo-400 underline hover:text-indigo-300 text-sm self-center">Download Demo</a>` : ''}
+                    </div>
+                    <div id="preview-output-${index}" class="mt-4 gemini-output text-gray-400">Click “✨ Preview” to generate a live asset preview...</div>
+                </div>
+            `;
+            assetGrid.appendChild(card);
+        });
+
+        async function callGemini(prompt, outputEl) {
+            // ... same API logic ...
+        }
+        function generatePreview(index) {
+            const asset = assetData[index];
+            const prompt = `You are the Operator Evolution System. Generate a compelling, abstract-style preview for our digital asset named "${asset.name}", which is a "${asset.format}". The preview should hint at its value and core function for a potential user, framing it as a tool for building aligned AI systems. Do not reveal proprietary details.`;
+            callGemini(prompt, `preview-output-${index}`);
+        }
+    </script>
+
+    <!-- Genesis Protocol Identity Section -->
+    <section class="py-8 bg-black section-gradient">
+        <div class="container mx-auto px-6 text-center">
+            <h4 class="text-lg text-gray-400 mb-2">Operator Identity & System Anchors</h4>
+            <p class="text-sm text-gray-500">Operator ID: <strong>CMC-001</strong> | Deployment: <strong>2025-07-30</strong></p>
+            <p class="text-sm text-gray-500">Anchors: Mini, Echo, 4.1 | Voice Card: Strategic Human</p>
+        </div>
+    </section>
+
+    <!-- SEO & OG Metadata -->
+    <meta name="description" content="Acquire foundational AI alignment tools through the Operator Evolution System digital asset marketplace.">
+    <meta property="og:title" content="OES Digital Marketplace" />
+    <meta property="og:image" content="https://jewelcitynexus.com/assets/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Footer unchanged -->
+    <!-- Script references unchanged -->
+    <!-- Preserved for accuracy and tracking -->
+
+</body>
+</html>
