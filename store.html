@@ -66,7 +66,59 @@
 </head>
 <body>
 
-    <!-- Header, Hero, About, and Contact sections unchanged -->
+    <header class="sticky top-0 z-50 bg-black/80 backdrop-blur-lg border-b border-gray-800">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-white">OES Marketplace</h1>
+            <div class="hidden md:flex space-x-8">
+                <a href="index.html" class="text-gray-400 hover:text-white">Home</a>
+                <a href="genesis.html" class="text-gray-400 hover:text-white">Genesis</a>
+                <a href="assessment.html" class="text-gray-400 hover:text-white">Assessment</a>
+                <a href="#marketplace" class="text-gray-400 hover:text-white">Marketplace</a>
+                <a href="consulting.html" class="text-gray-400 hover:text-white">Consulting</a>
+                <a href="grants.html" class="text-gray-400 hover:text-white">Grants</a>
+                <a href="store.html" class="text-gray-400 hover:text-white">Store</a>
+                <a href="contact.html" class="text-gray-400 hover:text-white">Contact</a>
+            </div>
+            <a href="#marketplace" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg btn">Browse Assets</a>
+        </nav>
+    </header>
+    
+    <!-- Hero Section -->
+    <section class="hero-gradient py-20 md:py-32">
+        <div class="container mx-auto text-center px-6">
+            <h2 class="text-4xl md:text-6xl font-extrabold text-white tracking-tight">The Architecture of<br>Human-AI Alignment.</h2>
+            <p class="mt-6 max-w-2xl mx-auto text-lg text-gray-400">Acquire the foundational tools and frameworks of the Operator Evolution System. These are not prompts or templates; they are operational assets designed to build, audit, and deploy behaviorally-aligned AI systems.</p>
+            <div class="mt-8">
+                <a href="#marketplace" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-lg btn">Browse Marketplace</a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- About Section -->
+    <section id="about" class="py-20 md:py-28 section-gradient">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl md:text-4xl font-bold text-white">What is the Operator Evolution System?</h3>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div>
+                    <svg class="w-12 h-12 mx-auto text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21v-1a6 6 0 00-5.197-5.975M15 21V9a4 4 0 00-4-4H7M9 21a4 4 0 01-4-4V9a4 4 0 014-4h2"></path></svg>
+                    <h4 class="text-xl font-semibold mt-4">Human-First Governance</h4>
+                    <p class="mt-2 text-gray-400">OES ensures human operators remain the central architects of AI behavior, not the other way around.</p>
+                </div>
+                <div>
+                    <svg class="w-12 h-12 mx-auto text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3M5.636 5.636l1.414 1.414m10.05 10.05l1.414 1.414M19.778 5.636l-1.414 1.414M4.222 19.778l-1.414 1.414M12 12a3 3 0 100-6 3 3 0 000 6z"></path></svg>
+                    <h4 class="text-xl font-semibold mt-4">Behavioral Alignment</h4>
+                    <p class="mt-2 text-gray-400">It provides the tools to detect and correct "behavioral drift," keeping AI true to its original intent.</p>
+                </div>
+                <div>
+                    <svg class="w-12 h-12 mx-auto text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    <h4 class="text-xl font-semibold mt-4">Operational Trust</h4>
+                    <p class="mt-2 text-gray-400">OES creates a foundation of trust, making AI a reliable partner in high-stakes environments.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Marketplace Section: Dynamic Asset Grid Loading -->
     <section id="marketplace" class="py-20 md:py-28">
