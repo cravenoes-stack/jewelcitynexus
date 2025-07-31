@@ -7,34 +7,52 @@
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-black text-white font-sans">
+  <!-- Header -->
   <header class="bg-gray-900 p-6 border-b border-gray-700">
-    <div class="max-w-4xl mx-auto flex items-center justify-between">
+    <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between">
       <h1 class="text-3xl font-bold"><a href="index.html">Jewel City Nexus</a></h1>
-      <nav class="space-x-4 text-gray-300">
+      <nav class="flex flex-wrap gap-4 text-gray-300">
         <a href="index.html" class="hover:text-white">Home</a>
         <a href="genesis.html" class="hover:text-white">Genesis</a>
         <a href="assessment.html" class="hover:text-white">Assessment</a>
+        <a href="consulting.html" class="hover:text-white">Consulting</a>
+        <a href="grants.html" class="hover:text-white">Grants</a>
+        <a href="store.html" class="hover:text-white">Store</a>
+        <a href="contact.html" class="hover:text-white">Contact</a>
       </nav>
     </div>
   </header>
-  <main class="px-6 py-16 text-center">
-    <h2 class="text-4xl font-extrabold mb-4">Welcome to the Nexus</h2>
-    <p class="max-w-2xl mx-auto text-gray-300 mb-8">
-      Real-time human-AI governance powered by the Operator Evolution System.
-    </p>
-    <div class="space-x-4">
-      <a href="genesis.html" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded">Learn about Genesis</a>
-      <a href="assessment.html" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded">Take the Assessment</a>
+
+  <!-- Hero Section with The Operator Evolution System Background -->
+  <section class="relative h-screen bg-cover bg-center" style="background-image: url('/assets/learningmapv2.png');">
+    <div class="absolute inset-0 bg-black bg-opacity-60"></div>
+    <div class="relative z-10 flex flex-col items-center justify-center h-full px-6 text-center">
+      <h2 class="text-5xl md:text-6xl font-extrabold text-white mb-4">The Operator Evolution System</h2>
+      <p class="max-w-2xl text-lg text-gray-300 mb-8">
+        Real‑time human‑AI governance powered by the Operator Evolution System.
+      </p>
+      <div class="space-x-4">
+        <a href="genesis.html" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded">Learn Genesis</a>
+        <a href="assessment.html" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded">Take Assessment</a>
+      </div>
     </div>
-  </main>
-  <footer class="text-center text-gray-600 py-8 border-t border-gray-800 text-sm">
-    © 2025 Jewel City Nexus. All rights reserved.
+  </section>
+
+  <!-- Feature Image & Callout -->
+  <section class="py-16 bg-black">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+      <img src="assets/learningmapv1.png" alt="Universal Truths Tree" class="mx-auto mb-6 rounded-lg shadow-lg" />
+      <h3 class="text-3xl font-semibold text-white">Our Foundational Pillars</h3>
+      <p class="mt-4 text-gray-400">
+        The core pillars—Irrefutable Framework, Golden Rule, Incontrovertible Truth, Amoral Conscience, and Karmic Retribution—form the bedrock of the Operator Evolution System.
+      </p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-800 py-8 text-center text-gray-600 text-sm">
+    <p>&copy; 2025 Jewel City Nexus. All rights reserved.</p>
   </footer>
 </body>
 </html>
-<nav>
-  <a href="consulting.html">Consulting</a>
-  <a href="grants.html">Grants</a>
-  <a href="store.html">Store</a>
-  <a href="contact.html">Contact</a>
-</nav>
+
