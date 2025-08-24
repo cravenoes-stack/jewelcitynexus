@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Processor with Download Options</title>
+    <title>File Processor - Download and Review</title>
     <style>
         * {
             margin: 0;
@@ -13,34 +13,38 @@
         }
         
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            color: #333;
             min-height: 100vh;
             padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         .container {
+            width: 100%;
             max-width: 1200px;
-            margin: 0 auto;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             overflow: hidden;
         }
         
         header {
             background: linear-gradient(90deg, #3498db, #2c3e50);
             color: white;
-            padding: 20px;
+            padding: 25px;
             text-align: center;
         }
         
         h1 {
-            font-size: 2.2rem;
+            font-size: 2.5rem;
             margin-bottom: 10px;
         }
         
         .subtitle {
-            font-size: 1rem;
+            font-size: 1.1rem;
             opacity: 0.9;
         }
         
@@ -53,8 +57,8 @@
         
         .upload-section {
             background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
+            padding: 25px;
+            border-radius: 10px;
             border: 2px dashed #3498db;
             text-align: center;
         }
@@ -63,17 +67,20 @@
             background: linear-gradient(90deg, #3498db, #2c3e50);
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 5px;
+            padding: 14px 28px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 1.1rem;
             transition: all 0.3s ease;
             margin-top: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .upload-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
         
         .files-section h2 {
@@ -81,28 +88,41 @@
             margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 2px solid #eee;
+            font-size: 1.8rem;
         }
         
         .file-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
         }
         
         .file-card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4efe9 100%);
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
             padding: 20px;
             display: flex;
             flex-direction: column;
             transition: transform 0.3s ease;
             border: 1px solid #eaeaea;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .file-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(135deg, #3498db, #2c3e50);
         }
         
         .file-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
         }
         
         .file-header {
@@ -112,8 +132,8 @@
         }
         
         .file-icon {
-            width: 42px;
-            height: 42px;
+            width: 48px;
+            height: 48px;
             background: linear-gradient(135deg, #3498db, #2c3e50);
             border-radius: 10px;
             display: flex;
@@ -124,7 +144,7 @@
         
         .file-icon i {
             color: white;
-            font-size: 20px;
+            font-size: 22px;
         }
         
         .file-info {
@@ -132,33 +152,34 @@
         }
         
         .file-name {
-            font-weight: 600;
+            font-weight: 700;
             color: #2c3e50;
             margin-bottom: 5px;
+            font-size: 1.2rem;
         }
         
         .file-meta {
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             color: #7f8c8d;
         }
         
         .file-actions {
             display: flex;
-            gap: 10px;
-            margin-top: 15px;
+            gap: 12px;
+            margin-top: 20px;
         }
         
         .btn {
             flex: 1;
-            padding: 8px 12px;
+            padding: 10px 15px;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 5px;
+            gap: 8px;
             transition: all 0.2s ease;
         }
         
@@ -169,6 +190,7 @@
         
         .btn-download:hover {
             background: linear-gradient(90deg, #27ae60, #219653);
+            transform: scale(1.05);
         }
         
         .btn-preview {
@@ -178,6 +200,7 @@
         
         .btn-preview:hover {
             background: linear-gradient(90deg, #2980b9, #1c6ea4);
+            transform: scale(1.05);
         }
         
         .preview-modal {
@@ -187,25 +210,29 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(0, 0, 0, 0.85);
             z-index: 1000;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
         
         .modal-content {
             background-color: white;
-            width: 80%;
-            max-width: 900px;
-            border-radius: 10px;
+            width: 85%;
+            max-width: 1000px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
         }
         
         .modal-header {
             background: linear-gradient(90deg, #3498db, #2c3e50);
             color: white;
-            padding: 15px 20px;
+            padding: 18px 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -215,33 +242,66 @@
             background: none;
             border: none;
             color: white;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .close-btn:hover {
+            transform: rotate(90deg);
         }
         
         .modal-body {
-            padding: 20px;
-            max-height: 70vh;
+            padding: 25px;
             overflow-y: auto;
+            flex-grow: 1;
         }
         
         .file-content {
-            line-height: 1.6;
+            line-height: 1.7;
             color: #333;
+            font-size: 1.05rem;
+        }
+        
+        .file-content p {
+            margin-bottom: 15px;
+        }
+        
+        .participant {
+            font-weight: 600;
+            color: #2c3e50;
         }
         
         .modal-footer {
-            padding: 15px 20px;
+            padding: 18px 25px;
             background-color: #f8f9fa;
             display: flex;
             justify-content: flex-end;
+            border-top: 1px solid #eee;
         }
         
         .no-files {
             grid-column: 1 / -1;
             text-align: center;
-            padding: 40px;
+            padding: 50px;
             color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-ready {
+            background-color: #2ecc71;
+        }
+        
+        .status-processing {
+            background-color: #f39c12;
         }
         
         @media (max-width: 768px) {
@@ -251,6 +311,14 @@
             
             .modal-content {
                 width: 95%;
+            }
+            
+            .file-actions {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2rem;
             }
         }
     </style>
@@ -265,10 +333,10 @@
         <div class="main-content">
             <div class="upload-section">
                 <h2>Upload Files for Processing</h2>
-                <p>Supported formats: .txt, .json, .csv</p>
+                <p>Supported formats: .txt, .json, .csv, .log</p>
                 <input type="file" id="file-upload" multiple style="display: none;">
                 <button class="upload-btn" onclick="document.getElementById('file-upload').click()">
-                    Select Files
+                    <i class="fas fa-cloud-upload-alt"></i> Select Files
                 </button>
             </div>
             
@@ -303,52 +371,199 @@
     </div>
 
     <script>
-        // Sample data for demonstration
-        const processedFiles = [
-            {
-                id: 1,
-                name: "Customer Feedback",
-                type: "conversation",
-                date: "2023-10-15",
-                content: "Customer: Hello, I'm having issues with my account.\nSupport Agent: Hi there, I'd be happy to help. Could you please describe the issue?\nCustomer: I can't log in despite resetting my password."
+        // File processor functionality
+        const fileProcessor = {
+            processedFiles: [],
+            
+            processFile: function(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    
+                    reader.onload = (e) => {
+                        // Simulate processing time
+                        setTimeout(() => {
+                            const content = e.target.result;
+                            const processedFile = {
+                                id: Date.now() + Math.floor(Math.random() * 1000),
+                                name: file.name,
+                                type: this.getFileType(file.name),
+                                date: new Date().toLocaleDateString(),
+                                size: this.formatFileSize(file.size),
+                                content: content,
+                                status: 'ready'
+                            };
+                            
+                            this.processedFiles.push(processedFile);
+                            resolve(processedFile);
+                        }, 1000);
+                    };
+                    
+                    reader.onerror = (error) => reject(error);
+                    reader.readAsText(file);
+                });
             },
-            {
-                id: 2,
-                name: "Technical Discussion",
-                type: "conversation",
-                date: "2023-10-16",
-                content: "Dev 1: We should implement OAuth for authentication.\nDev 2: I agree, it's more secure and user-friendly.\nDev 1: Let's use Auth0 for the implementation."
+            
+            getFileType: function(filename) {
+                const ext = filename.split('.').pop().toLowerCase();
+                if (['txt', 'log'].includes(ext)) return 'text';
+                if (['json'].includes(ext)) return 'JSON';
+                if (['csv'].includes(ext)) return 'CSV';
+                return 'document';
             },
-            {
-                id: 3,
-                name: "Project Requirements",
-                type: "document",
-                date: "2023-10-17",
-                content: "Project: Website Redesign\nObjectives:\n- Improve user experience\n- Increase page load speed\n- Modernize the design\n\nTimeline: 3 months\nBudget: $15,000"
+            
+            formatFileSize: function(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            },
+            
+            generateHTML: function(file) {
+                let htmlContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${file.name}</title>
+                    <meta charset="UTF-8">
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                            margin: 40px;
+                            color: #333;
+                            max-width: 1000px;
+                            margin-left: auto;
+                            margin-right: auto;
+                        }
+                        .header {
+                            border-bottom: 2px solid #3498db;
+                            padding-bottom: 15px;
+                            margin-bottom: 25px;
+                        }
+                        .meta {
+                            color: #7f8c8d;
+                            font-size: 0.9rem;
+                            margin-bottom: 20px;
+                        }
+                        .content {
+                            background: #f8f9fa;
+                            padding: 20px;
+                            border-radius: 8px;
+                            border-left: 4px solid #3498db;
+                        }
+                        .conversation p {
+                            margin: 12px 0;
+                            padding: 8px 12px;
+                            background: white;
+                            border-radius: 6px;
+                            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                        }
+                        .participant {
+                            font-weight: bold;
+                            color: #2c3e50;
+                        }
+                        pre {
+                            white-space: pre-wrap;
+                            font-family: 'Courier New', monospace;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>${file.name}</h1>
+                        <div class="meta">
+                            <strong>Type:</strong> ${file.type} | 
+                            <strong>Processed on:</strong> ${file.date} | 
+                            <strong>Size:</strong> ${file.size}
+                        </div>
+                    </div>
+                    <div class="content">
+                `;
+                
+                if (file.type === 'text' || file.type === 'JSON' || file.type === 'CSV') {
+                    htmlContent += `<pre>${file.content}</pre>`;
+                } else {
+                    htmlContent += file.content;
+                }
+                
+                htmlContent += `
+                    </div>
+                </body>
+                </html>
+                `;
+                
+                return htmlContent;
             }
-        ];
+        };
 
-        let currentFileId = null;
-
-        // Render file list on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            renderFileList();
-        });
-
-        // Function to render the file list
-        function renderFileList() {
-            const fileList = document.getElementById('file-list');
-            const noFiles = document.getElementById('no-files');
+        // UI functionality
+        const app = {
+            init: function() {
+                this.bindEvents();
+            },
             
-            if (processedFiles.length === 0) {
-                noFiles.style.display = 'block';
-                return;
-            }
+            bindEvents: function() {
+                document.getElementById('file-upload').addEventListener('change', (e) => {
+                    this.handleFileUpload(e.target.files);
+                });
+            },
             
-            noFiles.style.display = 'none';
-            fileList.innerHTML = '';
+            handleFileUpload: function(files) {
+                if (files.length === 0) return;
+                
+                for (let i = 0; i < files.length; i++) {
+                    this.addPlaceholderCard(files[i]);
+                    
+                    fileProcessor.processFile(files[i])
+                        .then(processedFile => {
+                            this.updateFileCard(processedFile);
+                        })
+                        .catch(error => {
+                            console.error('Error processing file:', error);
+                        });
+                }
+            },
             
-            processedFiles.forEach(file => {
+            addPlaceholderCard: function(file) {
+                const fileList = document.getElementById('file-list');
+                const noFiles = document.getElementById('no-files');
+                
+                if (noFiles.style.display !== 'none') {
+                    noFiles.style.display = 'none';
+                }
+                
+                const fileCard = document.createElement('div');
+                fileCard.className = 'file-card';
+                fileCard.id = 'card-' + file.name;
+                
+                fileCard.innerHTML = `
+                    <div class="file-header">
+                        <div class="file-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="file-info">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-meta">
+                                <span class="status-indicator status-processing"></span>
+                                Processing...
+                            </div>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn btn-download" disabled>
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                        <button class="btn btn-preview" disabled>
+                            <i class="fas fa-eye"></i> Preview
+                        </button>
+                    </div>
+                `;
+                
+                fileList.appendChild(fileCard);
+            },
+            
+            updateFileCard: function(file) {
                 const fileCard = document.createElement('div');
                 fileCard.className = 'file-card';
                 
@@ -359,7 +574,10 @@
                         </div>
                         <div class="file-info">
                             <div class="file-name">${file.name}</div>
-                            <div class="file-meta">${file.type} · ${file.date}</div>
+                            <div class="file-meta">
+                                <span class="status-indicator status-ready"></span>
+                                ${file.type} · ${file.date} · ${file.size}
+                            </div>
                         </div>
                     </div>
                     <div class="file-actions">
@@ -372,108 +590,38 @@
                     </div>
                 `;
                 
-                fileList.appendChild(fileCard);
-            });
-        }
-
-        // Function to preview a file
-        function previewFile(fileId) {
-            const file = processedFiles.find(f => f.id === fileId);
-            if (!file) return;
+                const oldCard = document.getElementById('card-' + file.name);
+                if (oldCard) {
+                    oldCard.parentNode.replaceChild(fileCard, oldCard);
+                } else {
+                    document.getElementById('file-list').appendChild(fileCard);
+                }
+            },
             
-            currentFileId = fileId;
-            
-            const modal = document.getElementById('preview-modal');
-            const modalTitle = document.getElementById('modal-title');
-            const fileContent = document.getElementById('file-content');
-            
-            modalTitle.textContent = `Preview: ${file.name}`;
-            
-            // Format the content based on file type
-            if (file.type === 'conversation') {
-                const lines = file.content.split('\n');
-                let formattedContent = '';
+            renderFilePreview: function(file) {
+                const modalTitle = document.getElementById('modal-title');
+                const fileContent = document.getElementById('file-content');
                 
-                lines.forEach(line => {
-                    if (line.includes(':')) {
-                        const parts = line.split(':');
-                        formattedContent += `<p><strong>${parts[0]}:</strong> ${parts.slice(1).join(':')}</p>`;
-                    } else {
-                        formattedContent += `<p>${line}</p>`;
-                    }
-                });
+                modalTitle.textContent = `Preview: ${file.name}`;
                 
-                fileContent.innerHTML = formattedContent;
-            } else {
-                // For documents, preserve line breaks
-                fileContent.innerHTML = file.content.replace(/\n/g, '<br>');
+                if (file.type === 'text' || file.type === 'JSON' || file.type === 'CSV') {
+                    fileContent.innerHTML = `<pre>${file.content}</pre>`;
+                } else {
+                    fileContent.innerHTML = file.content;
+                }
+                
+                document.getElementById('preview-modal').style.display = 'flex';
             }
-            
-            modal.style.display = 'flex';
-        }
+        };
 
-        // Function to close the preview modal
-        function closePreview() {
-            document.getElementById('preview-modal').style.display = 'none';
-            currentFileId = null;
-        }
+        // Global functions for button actions
+        let currentFileId = null;
 
-        // Function to download a file as HTML
         function downloadFile(fileId) {
-            const file = processedFiles.find(f => f.id === fileId);
+            const file = fileProcessor.processedFiles.find(f => f.id === fileId);
             if (!file) return;
             
-            let htmlContent = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>${file.name}</title>
-                <meta charset="UTF-8">
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        line-height: 1.6;
-                        margin: 40px;
-                        color: #333;
-                    }
-                    .conversation p {
-                        margin: 10px 0;
-                    }
-                    .participant {
-                        font-weight: bold;
-                        color: #2c3e50;
-                    }
-                </style>
-            </head>
-            <body>
-                <h1>${file.name}</h1>
-                <p><strong>Type:</strong> ${file.type}</p>
-                <p><strong>Date:</strong> ${file.date}</p>
-                <div class="content">
-            `;
-            
-            // Format the content based on file type
-            if (file.type === 'conversation') {
-                const lines = file.content.split('\n');
-                
-                lines.forEach(line => {
-                    if (line.includes(':')) {
-                        const parts = line.split(':');
-                        htmlContent += `<p><span class="participant">${parts[0]}:</span> ${parts.slice(1).join(':')}</p>`;
-                    } else {
-                        htmlContent += `<p>${line}</p>`;
-                    }
-                });
-            } else {
-                // For documents, preserve line breaks
-                htmlContent += `<pre>${file.content}</pre>`;
-            }
-            
-            htmlContent += `
-                </div>
-            </body>
-            </html>
-            `;
+            const htmlContent = fileProcessor.generateHTML(file);
             
             // Create download link
             const blob = new Blob([htmlContent], { type: 'text/html' });
@@ -487,7 +635,19 @@
             URL.revokeObjectURL(url);
         }
 
-        // Function to download the currently previewed file
+        function previewFile(fileId) {
+            const file = fileProcessor.processedFiles.find(f => f.id === fileId);
+            if (!file) return;
+            
+            currentFileId = fileId;
+            app.renderFilePreview(file);
+        }
+
+        function closePreview() {
+            document.getElementById('preview-modal').style.display = 'none';
+            currentFileId = null;
+        }
+
         function downloadCurrentFile() {
             if (currentFileId) {
                 downloadFile(currentFileId);
@@ -503,10 +663,9 @@
             }
         };
 
-        // Handle file upload (for demonstration purposes)
-        document.getElementById('file-upload').addEventListener('change', function(event) {
-            alert('File upload functionality would be implemented here. For this demo, we\'re using sample files.');
-            // In a real application, you would process the uploaded files here
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            app.init();
         });
     </script>
     
