@@ -1,162 +1,516 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>OES Archive</title>
-  <link href="https://cdn.tailwindcss.com" rel="stylesheet">
-</head>
-<body class="bg-gray-100 text-gray-900">
-  <div class="container mx-auto p-8">
-    <h1 class="text-2xl font-bold mb-4">Operator Evolution System Archive</h1>
-
-    <!-- Upload & Process Panel -->
-    <div class="mb-6">
-      <label class="block mb-2">Upload JSON Transcripts</label>
-      <input id="json-file"
-             type="file"
-             accept="application/json"
-             multiple
-             class="border px-2 py-1">
-      <button id="process-btn"
-              class="ml-2 bg-blue-600 text-white px-4 py-1 rounded">
-        Process Transcripts
-      </button>
-    </div>
-
-    <!-- Rendered Conversation Cards -->
-    <div id="review-commit" class="space-y-4">
-      <!-- each processed conversation card will appear here -->
-    </div>
-
-    <!-- Commit Button -->
-    <button id="commit-btn"
-            class="mt-6 bg-green-600 text-white px-4 py-2 rounded">
-      Commit Selected to Repo
-    </button>
-  </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const processBtn     = document.getElementById('process-btn');
-      const fileInput      = document.getElementById('json-file');
-      const reviewContainer= document.getElementById('review-commit');
-      const commitBtn      = document.getElementById('commit-btn');
-
-      let conversations = [];
-
-      // === EXISTING: Load & parse uploaded JSON transcripts ===
-      processBtn.addEventListener('click', async () => {
-        const files = Array.from(fileInput.files);
-        conversations = [];
-        for (let file of files) {
-          const text = await file.text();
-          const data = JSON.parse(text);
-          // assume data.conversations is your array
-          conversations.push(...data.conversations);
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Processor with Download Options</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        renderCategorizedConversations(conversations);
-      });
-
-      // === EXISTING: Commit selected conversations to your repo ===
-      commitBtn.addEventListener('click', () => {
-        const selected = conversations.filter(conv => {
-          return document.getElementById('select-' + conv.id).checked;
-        });
-        // …your existing logic to push selected items back to Git, API, etc…
-      });
-
-      // === EXISTING: Render cards + NEW Preview & Download buttons ===
-      function renderCategorizedConversations(convs) {
-        reviewContainer.innerHTML = '';
-        convs.forEach(conv => {
-          const card = document.createElement('div');
-          card.className = 'conversation-card p-4 bg-white rounded shadow flex items-start';
-
-          card.innerHTML = `
-            <input type="checkbox"
-                   id="select-${conv.id}"
-                   class="mr-3"
-            />
-            <div class="flex-1">
-              <label for="select-${conv.id}"
-                     class="font-semibold cursor-pointer">
-                ${conv.title}
-              </label>
-              <p class="text-sm text-gray-500 mt-1">
-                ${conv.platform} – ${conv.fullText.substring(0, 100)}...
-              </p>
-            </div>
-            <div class="flex flex-col space-y-2 ml-4">
-              <button type="button"
-                      class="view-btn bg-gray-200 hover:bg-gray-300 text-xs px-2 py-1 rounded">
-                Preview
-              </button>
-              <button type="button"
-                      class="download-btn bg-blue-600 hover:bg-blue-700 text-xs text-white px-2 py-1 rounded">
-                Download HTML
-              </button>
-            </div>
-          `;
-
-          // --- NEW: wire up Preview & Download ---
-          const viewBtn     = card.querySelector('.view-btn');
-          const downloadBtn = card.querySelector('.download-btn');
-          let blobUrl = null;
-
-          function ensureBlob() {
-            if (!blobUrl) {
-              const html = generateConversationHTML(conv);
-              const blob = new Blob([html], { type: 'text/html' });
-              blobUrl = URL.createObjectURL(blob);
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(90deg, #3498db, #2c3e50);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .upload-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px dashed #3498db;
+            text-align: center;
+        }
+        
+        .upload-btn {
+            background: linear-gradient(90deg, #3498db, #2c3e50);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+        
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .files-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .file-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .file-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+            border: 1px solid #eaeaea;
+        }
+        
+        .file-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .file-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .file-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        
+        .file-icon i {
+            color: white;
+            font-size: 20px;
+        }
+        
+        .file-info {
+            flex-grow: 1;
+        }
+        
+        .file-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .file-meta {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-download {
+            background: linear-gradient(90deg, #2ecc71, #27ae60);
+            color: white;
+        }
+        
+        .btn-download:hover {
+            background: linear-gradient(90deg, #27ae60, #219653);
+        }
+        
+        .btn-preview {
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .btn-preview:hover {
+            background: linear-gradient(90deg, #2980b9, #1c6ea4);
+        }
+        
+        .preview-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            width: 80%;
+            max-width: 900px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            background: linear-gradient(90deg, #3498db, #2c3e50);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            padding: 20px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .file-content {
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .modal-footer {
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .no-files {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        
+        @media (max-width: 768px) {
+            .file-list {
+                grid-template-columns: 1fr;
             }
-          }
-
-          viewBtn.addEventListener('click', () => {
-            ensureBlob();
-            window.open(blobUrl, '_blank');
-          });
-
-          downloadBtn.addEventListener('click', () => {
-            ensureBlob();
-            const a = document.createElement('a');
-            a.href = blobUrl;
-            // sanitize filename
-            a.download = conv.title
-              .replace(/\s+/g, '_')
-              .replace(/[^\w\-]/g, '') + '.html';
-            a.click();
-          });
-
-          reviewContainer.appendChild(card);
-        });
-      }
-
-      // === NEW: Build a standalone HTML document for each conversation ===
-      function generateConversationHTML(conv) {
-        const safeText = conv.fullText
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/\n/g, '<br>');
-
-        return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>${conv.title}</title>
-  <style>
-    body { font-family: sans-serif; padding: 2rem; background: #f9fafb; }
-    h1 { margin-bottom: 1rem; }
-    pre { background: #fff; padding: 1rem; border: 1px solid #ddd; overflow-x: auto; }
-  </style>
+            
+            .modal-content {
+                width: 95%;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>${conv.title}</h1>
-  <pre>${safeText}</pre>
-</body>
-</html>`;
-      }
-    });
-  </script>
+    <div class="container">
+        <header>
+            <h1>File Processor</h1>
+            <p class="subtitle">Process, preview, and download your files as HTML</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="upload-section">
+                <h2>Upload Files for Processing</h2>
+                <p>Supported formats: .txt, .json, .csv</p>
+                <input type="file" id="file-upload" multiple style="display: none;">
+                <button class="upload-btn" onclick="document.getElementById('file-upload').click()">
+                    Select Files
+                </button>
+            </div>
+            
+            <div class="files-section">
+                <h2>Processed Files</h2>
+                <div class="file-list" id="file-list">
+                    <div class="no-files" id="no-files">
+                        <p>No files processed yet. Upload files to begin.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="preview-modal" id="preview-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">File Preview</h3>
+                <button class="close-btn" onclick="closePreview()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <div class="file-content" id="file-content">
+                    <!-- File content will be displayed here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-download" onclick="downloadCurrentFile()">
+                    <i class="fas fa-download"></i> Download as HTML
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data for demonstration
+        const processedFiles = [
+            {
+                id: 1,
+                name: "Customer Feedback",
+                type: "conversation",
+                date: "2023-10-15",
+                content: "Customer: Hello, I'm having issues with my account.\nSupport Agent: Hi there, I'd be happy to help. Could you please describe the issue?\nCustomer: I can't log in despite resetting my password."
+            },
+            {
+                id: 2,
+                name: "Technical Discussion",
+                type: "conversation",
+                date: "2023-10-16",
+                content: "Dev 1: We should implement OAuth for authentication.\nDev 2: I agree, it's more secure and user-friendly.\nDev 1: Let's use Auth0 for the implementation."
+            },
+            {
+                id: 3,
+                name: "Project Requirements",
+                type: "document",
+                date: "2023-10-17",
+                content: "Project: Website Redesign\nObjectives:\n- Improve user experience\n- Increase page load speed\n- Modernize the design\n\nTimeline: 3 months\nBudget: $15,000"
+            }
+        ];
+
+        let currentFileId = null;
+
+        // Render file list on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            renderFileList();
+        });
+
+        // Function to render the file list
+        function renderFileList() {
+            const fileList = document.getElementById('file-list');
+            const noFiles = document.getElementById('no-files');
+            
+            if (processedFiles.length === 0) {
+                noFiles.style.display = 'block';
+                return;
+            }
+            
+            noFiles.style.display = 'none';
+            fileList.innerHTML = '';
+            
+            processedFiles.forEach(file => {
+                const fileCard = document.createElement('div');
+                fileCard.className = 'file-card';
+                
+                fileCard.innerHTML = `
+                    <div class="file-header">
+                        <div class="file-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="file-info">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-meta">${file.type} · ${file.date}</div>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn btn-download" onclick="downloadFile(${file.id})">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                        <button class="btn btn-preview" onclick="previewFile(${file.id})">
+                            <i class="fas fa-eye"></i> Preview
+                        </button>
+                    </div>
+                `;
+                
+                fileList.appendChild(fileCard);
+            });
+        }
+
+        // Function to preview a file
+        function previewFile(fileId) {
+            const file = processedFiles.find(f => f.id === fileId);
+            if (!file) return;
+            
+            currentFileId = fileId;
+            
+            const modal = document.getElementById('preview-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const fileContent = document.getElementById('file-content');
+            
+            modalTitle.textContent = `Preview: ${file.name}`;
+            
+            // Format the content based on file type
+            if (file.type === 'conversation') {
+                const lines = file.content.split('\n');
+                let formattedContent = '';
+                
+                lines.forEach(line => {
+                    if (line.includes(':')) {
+                        const parts = line.split(':');
+                        formattedContent += `<p><strong>${parts[0]}:</strong> ${parts.slice(1).join(':')}</p>`;
+                    } else {
+                        formattedContent += `<p>${line}</p>`;
+                    }
+                });
+                
+                fileContent.innerHTML = formattedContent;
+            } else {
+                // For documents, preserve line breaks
+                fileContent.innerHTML = file.content.replace(/\n/g, '<br>');
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        // Function to close the preview modal
+        function closePreview() {
+            document.getElementById('preview-modal').style.display = 'none';
+            currentFileId = null;
+        }
+
+        // Function to download a file as HTML
+        function downloadFile(fileId) {
+            const file = processedFiles.find(f => f.id === fileId);
+            if (!file) return;
+            
+            let htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>${file.name}</title>
+                <meta charset="UTF-8">
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        line-height: 1.6;
+                        margin: 40px;
+                        color: #333;
+                    }
+                    .conversation p {
+                        margin: 10px 0;
+                    }
+                    .participant {
+                        font-weight: bold;
+                        color: #2c3e50;
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>${file.name}</h1>
+                <p><strong>Type:</strong> ${file.type}</p>
+                <p><strong>Date:</strong> ${file.date}</p>
+                <div class="content">
+            `;
+            
+            // Format the content based on file type
+            if (file.type === 'conversation') {
+                const lines = file.content.split('\n');
+                
+                lines.forEach(line => {
+                    if (line.includes(':')) {
+                        const parts = line.split(':');
+                        htmlContent += `<p><span class="participant">${parts[0]}:</span> ${parts.slice(1).join(':')}</p>`;
+                    } else {
+                        htmlContent += `<p>${line}</p>`;
+                    }
+                });
+            } else {
+                // For documents, preserve line breaks
+                htmlContent += `<pre>${file.content}</pre>`;
+            }
+            
+            htmlContent += `
+                </div>
+            </body>
+            </html>
+            `;
+            
+            // Create download link
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${file.name.replace(/\s+/g, '_')}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Function to download the currently previewed file
+        function downloadCurrentFile() {
+            if (currentFileId) {
+                downloadFile(currentFileId);
+                closePreview();
+            }
+        }
+
+        // Close modal if clicked outside content
+        window.onclick = function(event) {
+            const modal = document.getElementById('preview-modal');
+            if (event.target === modal) {
+                closePreview();
+            }
+        };
+
+        // Handle file upload (for demonstration purposes)
+        document.getElementById('file-upload').addEventListener('change', function(event) {
+            alert('File upload functionality would be implemented here. For this demo, we\'re using sample files.');
+            // In a real application, you would process the uploaded files here
+        });
+    </script>
+    
+    <!-- Font Awesome for icons -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </body>
 </html>
