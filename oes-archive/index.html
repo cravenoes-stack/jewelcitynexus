@@ -3,8 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Processor - Download and Review</title>
+    <title>Premium File Processor | JewelCityNexus</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --gray: #95a5a6;
+            --light-gray: #f5f5f5;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s ease;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -20,92 +35,141 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            line-height: 1.6;
         }
         
         .container {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1400px;
             background: white;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--shadow);
             overflow: hidden;
         }
         
         header {
-            background: linear-gradient(90deg, #3498db, #2c3e50);
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
-            padding: 25px;
+            padding: 30px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transform: rotate(30deg);
         }
         
         h1 {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             margin-bottom: 10px;
+            font-weight: 700;
+            position: relative;
         }
         
         .subtitle {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             opacity: 0.9;
+            font-weight: 300;
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            display: inline-block;
+            background: linear-gradient(135deg, #fff 0%, #3498db 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3));
         }
         
         .main-content {
-            padding: 30px;
+            padding: 40px;
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 40px;
         }
         
         .upload-section {
-            background-color: #f8f9fa;
-            padding: 25px;
-            border-radius: 10px;
-            border: 2px dashed #3498db;
+            background-color: var(--light-gray);
+            padding: 30px;
+            border-radius: 12px;
+            border: 2px dashed var(--secondary);
             text-align: center;
+            transition: var(--transition);
+        }
+        
+        .upload-section:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
         }
         
         .upload-btn {
-            background: linear-gradient(90deg, #3498db, #2c3e50);
+            background: linear-gradient(90deg, var(--secondary) 0%, var(--primary) 100%);
             color: white;
             border: none;
-            padding: 14px 28px;
-            border-radius: 8px;
+            padding: 16px 32px;
+            border-radius: 50px;
             cursor: pointer;
             font-size: 1.1rem;
-            transition: all 0.3s ease;
-            margin-top: 15px;
+            transition: var(--transition);
+            margin-top: 20px;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
         }
         
         .upload-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
         }
         
         .files-section h2 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #eee;
-            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light-gray);
+            font-size: 2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .files-section h2::before {
+            content: '\f07c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: var(--secondary);
         }
         
         .file-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
         }
         
         .file-card {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4efe9 100%);
+            background: white;
             border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            padding: 20px;
+            box-shadow: var(--shadow);
+            padding: 25px;
             display: flex;
             flex-direction: column;
-            transition: transform 0.3s ease;
-            border: 1px solid #eaeaea;
+            transition: var(--transition);
+            border: 1px solid var(--light-gray);
             position: relative;
             overflow: hidden;
         }
@@ -117,34 +181,35 @@
             left: 0;
             width: 5px;
             height: 100%;
-            background: linear-gradient(135deg, #3498db, #2c3e50);
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
         }
         
         .file-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
         }
         
         .file-header {
             display: flex;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         
         .file-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #3498db, #2c3e50);
-            border-radius: 10px;
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 15px;
+            margin-right: 20px;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
         }
         
         .file-icon i {
             color: white;
-            font-size: 22px;
+            font-size: 24px;
         }
         
         .file-info {
@@ -153,54 +218,60 @@
         
         .file-name {
             font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 5px;
-            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 1.3rem;
         }
         
         .file-meta {
-            font-size: 0.9rem;
-            color: #7f8c8d;
+            font-size: 0.95rem;
+            color: var(--gray);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         
         .file-actions {
             display: flex;
-            gap: 12px;
-            margin-top: 20px;
+            gap: 15px;
+            margin-top: 25px;
         }
         
         .btn {
             flex: 1;
-            padding: 10px 15px;
+            padding: 12px 18px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 0.95rem;
+            font-size: 1rem;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            transition: all 0.2s ease;
+            transition: var(--transition);
+            font-weight: 600;
         }
         
         .btn-download {
-            background: linear-gradient(90deg, #2ecc71, #27ae60);
+            background: linear-gradient(90deg, var(--success) 0%, #27ae60 100%);
             color: white;
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
         }
         
         .btn-download:hover {
-            background: linear-gradient(90deg, #27ae60, #219653);
-            transform: scale(1.05);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(46, 204, 113, 0.4);
         }
         
         .btn-preview {
-            background: linear-gradient(90deg, #3498db, #2980b9);
+            background: linear-gradient(90deg, var(--secondary) 0%, #2980b9 100%);
             color: white;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
         }
         
         .btn-preview:hover {
-            background: linear-gradient(90deg, #2980b9, #1c6ea4);
-            transform: scale(1.05);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
         }
         
         .preview-modal {
@@ -210,7 +281,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.85);
+            background-color: rgba(0, 0, 0, 0.9);
             z-index: 1000;
             align-items: center;
             justify-content: center;
@@ -219,20 +290,20 @@
         
         .modal-content {
             background-color: white;
-            width: 85%;
-            max-width: 1000px;
-            border-radius: 12px;
+            width: 90%;
+            max-width: 1100px;
+            border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
             display: flex;
             flex-direction: column;
             max-height: 90vh;
         }
         
         .modal-header {
-            background: linear-gradient(90deg, #3498db, #2c3e50);
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
-            padding: 18px 25px;
+            padding: 20px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -242,17 +313,24 @@
             background: none;
             border: none;
             color: white;
-            font-size: 1.8rem;
+            font-size: 2rem;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: var(--transition);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
         }
         
         .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
             transform: rotate(90deg);
         }
         
         .modal-body {
-            padding: 25px;
+            padding: 30px;
             overflow-y: auto;
             flex-grow: 1;
         }
@@ -260,32 +338,38 @@
         .file-content {
             line-height: 1.7;
             color: #333;
-            font-size: 1.05rem;
+            font-size: 1.1rem;
         }
         
         .file-content p {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--light-gray);
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary);
         }
         
         .participant {
-            font-weight: 600;
-            color: #2c3e50;
+            font-weight: 700;
+            color: var(--primary);
+            display: block;
+            margin-bottom: 5px;
         }
         
         .modal-footer {
-            padding: 18px 25px;
-            background-color: #f8f9fa;
+            padding: 20px 30px;
+            background-color: var(--light-gray);
             display: flex;
             justify-content: flex-end;
-            border-top: 1px solid #eee;
+            border-top: 1px solid var(--light-gray);
         }
         
         .no-files {
             grid-column: 1 / -1;
             text-align: center;
-            padding: 50px;
-            color: #7f8c8d;
-            font-size: 1.1rem;
+            padding: 60px;
+            color: var(--gray);
+            font-size: 1.2rem;
         }
         
         .status-indicator {
@@ -297,20 +381,36 @@
         }
         
         .status-ready {
-            background-color: #2ecc71;
+            background-color: var(--success);
         }
         
         .status-processing {
-            background-color: #f39c12;
+            background-color: var(--warning);
+        }
+        
+        .file-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: var(--light);
+            color: var(--dark);
+        }
+        
+        @media (max-width: 992px) {
+            .file-list {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
         }
         
         @media (max-width: 768px) {
-            .file-list {
-                grid-template-columns: 1fr;
+            .main-content {
+                padding: 25px;
             }
             
-            .modal-content {
-                width: 95%;
+            .file-list {
+                grid-template-columns: 1fr;
             }
             
             .file-actions {
@@ -318,25 +418,64 @@
             }
             
             h1 {
-                font-size: 2rem;
+                font-size: 2.2rem;
             }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .modal-content {
+                width: 95%;
+            }
+        }
+        
+        /* Animation for file cards */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .file-card {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--secondary);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>File Processor</h1>
-            <p class="subtitle">Process, preview, and download your files as HTML</p>
+            <div class="logo">
+                <i class="fas fa-gem"></i>
+            </div>
+            <h1>JewelCityNexus File Processor</h1>
+            <p class="subtitle">Professional file processing with premium preview and download capabilities</p>
         </header>
         
         <div class="main-content">
             <div class="upload-section">
-                <h2>Upload Files for Processing</h2>
-                <p>Supported formats: .txt, .json, .csv, .log</p>
+                <h2><i class="fas fa-cloud-upload-alt"></i> Upload Files for Processing</h2>
+                <p>Supported formats: .txt, .json, .csv, .log, .md</p>
                 <input type="file" id="file-upload" multiple style="display: none;">
                 <button class="upload-btn" onclick="document.getElementById('file-upload').click()">
-                    <i class="fas fa-cloud-upload-alt"></i> Select Files
+                    <i class="fas fa-file-upload"></i> Select Files
                 </button>
             </div>
             
@@ -344,6 +483,7 @@
                 <h2>Processed Files</h2>
                 <div class="file-list" id="file-list">
                     <div class="no-files" id="no-files">
+                        <p><i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i></p>
                         <p>No files processed yet. Upload files to begin.</p>
                     </div>
                 </div>
@@ -395,7 +535,7 @@
                             
                             this.processedFiles.push(processedFile);
                             resolve(processedFile);
-                        }, 1000);
+                        }, 1500);
                     };
                     
                     reader.onerror = (error) => reject(error);
@@ -405,7 +545,7 @@
             
             getFileType: function(filename) {
                 const ext = filename.split('.').pop().toLowerCase();
-                if (['txt', 'log'].includes(ext)) return 'text';
+                if (['txt', 'log', 'md'].includes(ext)) return 'text';
                 if (['json'].includes(ext)) return 'JSON';
                 if (['csv'].includes(ext)) return 'CSV';
                 return 'document';
@@ -426,46 +566,78 @@
                 <head>
                     <title>${file.name}</title>
                     <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <style>
                         body {
-                            font-family: Arial, sans-serif;
-                            line-height: 1.6;
-                            margin: 40px;
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            line-height: 1.7;
+                            margin: 0;
+                            padding: 40px;
                             color: #333;
                             max-width: 1000px;
                             margin-left: auto;
                             margin-right: auto;
+                            background: #f9f9f9;
                         }
                         .header {
-                            border-bottom: 2px solid #3498db;
-                            padding-bottom: 15px;
-                            margin-bottom: 25px;
+                            border-bottom: 3px solid #3498db;
+                            padding-bottom: 20px;
+                            margin-bottom: 30px;
+                        }
+                        h1 {
+                            color: #2c3e50;
+                            margin-bottom: 10px;
                         }
                         .meta {
                             color: #7f8c8d;
-                            font-size: 0.9rem;
-                            margin-bottom: 20px;
+                            font-size: 1rem;
+                            margin-bottom: 25px;
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 20px;
+                        }
+                        .meta span {
+                            display: flex;
+                            align-items: center;
+                            gap: 5px;
                         }
                         .content {
-                            background: #f8f9fa;
-                            padding: 20px;
-                            border-radius: 8px;
-                            border-left: 4px solid #3498db;
+                            background: white;
+                            padding: 30px;
+                            border-radius: 12px;
+                            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+                            border-left: 5px solid #3498db;
                         }
                         .conversation p {
-                            margin: 12px 0;
-                            padding: 8px 12px;
-                            background: white;
-                            border-radius: 6px;
-                            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                            margin: 15px 0;
+                            padding: 15px;
+                            background: #f8f9fa;
+                            border-radius: 8px;
+                            border-left: 4px solid #e74c3c;
                         }
                         .participant {
-                            font-weight: bold;
+                            font-weight: 700;
                             color: #2c3e50;
+                            display: block;
+                            margin-bottom: 8px;
+                            font-size: 1.1rem;
                         }
                         pre {
                             white-space: pre-wrap;
                             font-family: 'Courier New', monospace;
+                            background: #2c3e50;
+                            color: #ecf0f1;
+                            padding: 20px;
+                            border-radius: 8px;
+                            overflow-x: auto;
+                        }
+                        .footer {
+                            margin-top: 40px;
+                            text-align: center;
+                            color: #7f8c8d;
+                            font-size: 0.9rem;
+                            border-top: 1px solid #eee;
+                            padding-top: 20px;
                         }
                     </style>
                 </head>
@@ -473,9 +645,9 @@
                     <div class="header">
                         <h1>${file.name}</h1>
                         <div class="meta">
-                            <strong>Type:</strong> ${file.type} | 
-                            <strong>Processed on:</strong> ${file.date} | 
-                            <strong>Size:</strong> ${file.size}
+                            <span><i class="fas fa-file"></i> <strong>Type:</strong> ${file.type}</span>
+                            <span><i class="fas fa-calendar"></i> <strong>Processed on:</strong> ${file.date}</span>
+                            <span><i class="fas fa-weight"></i> <strong>Size:</strong> ${file.size}</span>
                         </div>
                     </div>
                     <div class="content">
@@ -484,10 +656,24 @@
                 if (file.type === 'text' || file.type === 'JSON' || file.type === 'CSV') {
                     htmlContent += `<pre>${file.content}</pre>`;
                 } else {
-                    htmlContent += file.content;
+                    // Format conversation content
+                    const lines = file.content.split('\n');
+                    for (const line of lines) {
+                        if (line.includes(':') && line.length < 200) {
+                            const parts = line.split(':');
+                            const participant = parts[0];
+                            const message = parts.slice(1).join(':');
+                            htmlContent += `<p><span class="participant">${participant}:</span> ${message}</p>`;
+                        } else {
+                            htmlContent += `<p>${line}</p>`;
+                        }
+                    }
                 }
                 
                 htmlContent += `
+                    </div>
+                    <div class="footer">
+                        <p>Processed by JewelCityNexus File Processor</p>
                     </div>
                 </body>
                 </html>
@@ -577,6 +763,7 @@
                             <div class="file-meta">
                                 <span class="status-indicator status-ready"></span>
                                 ${file.type} · ${file.date} · ${file.size}
+                                <span class="file-badge">Processed</span>
                             </div>
                         </div>
                     </div>
@@ -607,7 +794,22 @@
                 if (file.type === 'text' || file.type === 'JSON' || file.type === 'CSV') {
                     fileContent.innerHTML = `<pre>${file.content}</pre>`;
                 } else {
-                    fileContent.innerHTML = file.content;
+                    // Format conversation content for preview
+                    const lines = file.content.split('\n');
+                    let formattedContent = '';
+                    
+                    for (const line of lines) {
+                        if (line.includes(':') && line.length < 200) {
+                            const parts = line.split(':');
+                            const participant = parts[0];
+                            const message = parts.slice(1).join(':');
+                            formattedContent += `<p><span class="participant">${participant}:</span> ${message}</p>`;
+                        } else {
+                            formattedContent += `<p>${line}</p>`;
+                        }
+                    }
+                    
+                    fileContent.innerHTML = formattedContent;
                 }
                 
                 document.getElementById('preview-modal').style.display = 'flex';
@@ -666,10 +868,63 @@
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
             app.init();
+            
+            // Add some sample files for demonstration
+            setTimeout(() => {
+                const sampleFiles = [
+                    {
+                        name: 'Design Discussion.txt',
+                        type: 'text',
+                        content: `Designer: I think we should go with a minimalist design for the homepage.\nDeveloper: I agree, but we need to ensure it doesn't look too sparse.\nClient: Can we add more color to make it pop? Maybe a gradient background?\nDesigner: I can create some mockups with subtle gradients.\nDeveloper: Let's make sure the gradients don't affect performance.`
+                    },
+                    {
+                        name: 'Technical Specifications.json',
+                        type: 'JSON',
+                        content: JSON.stringify({
+                            project: "Website Redesign",
+                            technologies: ["HTML5", "CSS3", "JavaScript"],
+                            features: ["Responsive Design", "CMS Integration", "E-commerce"],
+                            timeline: "3 months",
+                            budget: "$15,000"
+                        }, null, 2)
+                    },
+                    {
+                        name: 'User Feedback.csv',
+                        type: 'CSV',
+                        content: `Name,Email,Rating,Comments\nJohn Doe,john@example.com,5,"Great service, would recommend!"\nJane Smith,jane@example.com,4,"Good experience, but room for improvement"\nBob Johnson,bob@example.com,3,"Average experience, nothing special"`
+                    }
+                ];
+                
+                sampleFiles.forEach((file, index) => {
+                    setTimeout(() => {
+                        const blob = new Blob([file.content], { type: 'text/plain' });
+                        const fakeFile = new File([blob], file.name, { 
+                            type: 'text/plain',
+                            lastModified: Date.now()
+                        });
+                        
+                        Object.defineProperty(fakeFile, 'size', { value: file.content.length });
+                        
+                        app.addPlaceholderCard(fakeFile);
+                        
+                        setTimeout(() => {
+                            const processedFile = {
+                                id: Date.now() + Math.floor(Math.random() * 1000),
+                                name: file.name,
+                                type: file.type,
+                                date: new Date().toLocaleDateString(),
+                                size: fileProcessor.formatFileSize(file.content.length),
+                                content: file.content,
+                                status: 'ready'
+                            };
+                            
+                            fileProcessor.processedFiles.push(processedFile);
+                            app.updateFileCard(processedFile);
+                        }, 1500);
+                    }, index * 800);
+                });
+            }, 1000);
         });
     </script>
-    
-    <!-- Font Awesome for icons -->
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </body>
 </html>
