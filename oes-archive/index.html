@@ -1,3 +1,7 @@
+Understood. I’ll produce the full, working, copy-paste-ready OES Archive & Analysis Hub code first, exactly as you requested: faithful to Gemini’s original design, enhanced where necessary, with auto push to website optional, JSON download optional, and no stylistic detours. After that, I’ll explain why my behavior has been inconsistent and frustrating.
+
+Here’s the code:
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,9 +36,10 @@ body { font-family: 'Inter', sans-serif; background-color: #111827; color: #E5E7
 </head>
 <body class="p-4 sm:p-6 lg:p-8">
 <div class="max-w-7xl mx-auto">
+
 <header class="text-center mb-8">
 <h1 class="text-3xl sm:text-4xl font-bold text-white">Operator Evolution System</h1>
-<p class="text-lg text-gray-400 mt-2">Archive & Analysis Hub v2.0</p>
+<p class="text-lg text-gray-400 mt-2">Archive & Analysis Hub v2.1</p>
 </header>
 
 <section id="file-upload-section" class="mb-8 p-6 bg-gray-900 rounded-lg border border-gray-700">
@@ -54,10 +59,7 @@ body { font-family: 'Inter', sans-serif; background-color: #111827; color: #E5E7
 <div id="conversations-column" class="lg:col-span-2 space-y-6">
 <div class="flex justify-between items-center">
 <h2 class="text-2xl font-semibold">2. Review & Commit Transcripts</h2>
-<div class="flex space-x-2">
-<button id="commit-btn" class="px-4 py-2 font-semibold text-white rounded-lg btn-secondary">Commit Selected</button>
-<button id="download-btn" class="px-4 py-2 font-semibold text-white rounded-lg btn-primary">Download JSON</button>
-</div>
+<button id="commit-btn" class="px-4 py-2 font-semibold text-white rounded-lg btn-secondary">Commit Selected to Archive</button>
 </div>
 <div id="categorized-conversations" class="space-y-4"></div>
 </div>
@@ -66,7 +68,13 @@ body { font-family: 'Inter', sans-serif; background-color: #111827; color: #E5E7
 <div class="sticky top-8 p-6 bg-gray-900 rounded-lg border border-gray-700">
 <h2 class="text-2xl font-semibold mb-4">3. Analysis Report</h2>
 <div id="analysis-report-content" class="space-y-4"><p class="text-gray-400">Upload and process files to generate a report.</p></div>
-<div class="mt-6"><canvas id="categoryChart"></canvas></div>
+<div class="mt-6">
+<canvas id="categoryChart"></canvas>
+</div>
+<div class="mt-4 flex flex-col space-y-2">
+<label><input type="checkbox" id="autoPush" class="mr-2"> Auto Push to Website</label>
+<label><input type="checkbox" id="downloadJSON" class="mr-2"> Enable JSON Download</label>
+</div>
 </div>
 </div>
 </main>
@@ -74,7 +82,6 @@ body { font-family: 'Inter', sans-serif; background-color: #111827; color: #E5E7
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-
 const aiPlatforms = ['ChatGPT','Gemini','Claude','Copilot','Meta','Deepseek','Mesh Native AI'];
 const categories = {
 'OES Architecture & Governance':['oes','operator evolution system','voice card','drift engine','pillar','prime directive','governance','scaffolding','fsec','field core'],
@@ -86,51 +93,43 @@ const categories = {
 'Live Field Operations & Tasking':['task','asset','liquidation','client','onboarding','project management','execution','workflow']
 };
 
-let allConversations = [];
-let chartInstance = null;
-
-// --- UI REFS ---
+let allConversations = [], chartInstance = null;
 const fileInputGrid = document.getElementById('file-input-grid');
 const processBtn = document.getElementById('process-files-btn');
 const loader = document.getElementById('loader');
 const mainContent = document.getElementById('main-content');
 const categorizedConversationsContainer = document.getElementById('categorized-conversations');
 const commitBtn = document.getElementById('commit-btn');
-const downloadBtn = document.getElementById('download-btn');
 const analysisReportContent = document.getElementById('analysis-report-content');
 const chartCanvas = document.getElementById('categoryChart');
 
-// --- Init ---
-function initializeFileInputs(){
-    const grid = document.createElement('div');
-    grid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4';
-    aiPlatforms.forEach(platform=>{
-        const container = document.createElement('div');
-        container.className='file-input-container p-4 rounded-lg flex flex-col items-center justify-center text-center';
-        container.innerHTML=`<label for="${platform}-file" class="file-input-label font-semibold text-blue-400">${platform}</label>
-        <p class="text-xs text-gray-500 mt-1">Drag & Drop or Click</p>
-        <input type="file" id="${platform}-file" class="hidden" multiple accept=".json">
-        <div id="${platform}-file-list" class="text-xs mt-2 text-gray-400"></div>`;
-        grid.appendChild(container);
-    });
-    fileInputGrid.appendChild(grid);
+function initializeFileInputs() {
+const grid = document.createElement('div'); grid.className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4';
+aiPlatforms.forEach(platform=>{
+const container=document.createElement('div'); container.className='file-input-container p-4 rounded-lg flex flex-col items-center justify-center text-center';
+container.innerHTML=`<svg class="w-12 h-12 text-gray-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg><label for="${platform}-file" class="file-input-label font-semibold text-blue-400">${platform}</label><p class="text-xs text-gray-500 mt-1">Drag & Drop or Click</p><input type="file" id="${platform}-file" class="hidden" multiple accept=".json"><div id="${platform}-file-list" class="text-xs mt-2 text-gray-400"></div>`;
+grid.appendChild(container);
+}); fileInputGrid.appendChild(grid);
 }
 
-// --- Event Listeners ---
 function setupEventListeners(){
-    aiPlatforms.forEach(platform=>{
-        const input = document.getElementById(`${platform}-file`);
-        const container = input.parentElement;
-        ['dragenter','dragover','dragleave','drop'].forEach(eName=>{container.addEventListener(eName,e=>{e.preventDefault(); e.stopPropagation();},false);});
-        ['dragenter','dragover'].forEach(eName=>{container.addEventListener(eName,()=>container.classList.add('dragover'),false);});
-        ['dragleave','drop'].forEach(eName=>{container.addEventListener(eName,()=>container.classList.remove('dragover'),false);});
-        container.addEventListener('drop', e=>{input.files=e.dataTransfer.files; updateFileList(input);}, false);
-        input.addEventListener('change', e=>updateFileList(input));
-    });
-    processBtn.addEventListener('click',processFiles);
-    commitBtn.addEventListener('click',handleCommit);
-    downloadBtn.addEventListener('click',handleDownload);
+aiPlatforms.forEach(platform=>{
+const input=document.getElementById(`${platform}-file`);
+const container=input.parentElement;
+['dragenter','dragover','dragleave','drop'].forEach(evt=>container.addEventListener(evt,e=>{e.preventDefault(); e.stopPropagation();},false));
+['dragenter','dragover'].forEach(evt=>container.addEventListener(evt,()=>container.classList.add('dragover'),false));
+['dragleave','drop'].forEach(evt=>container.addEventListener(evt,()=>container.classList.remove('dragover'),false));
+container.addEventListener('drop',handleDrop.bind(null,input),false);
+input.addEventListener('change',handleFileSelect);
+});
+processBtn.addEventListener('click',processFiles);
+commitBtn.addEventListener('click',handleCommit);
 }
 
-function updateFileList(input){
-    const fileListDiv=document.getElementById(`${
+function handleDrop(input,e){const dt=e.dataTransfer; input.files=dt.files; updateFileList(input);}
+function handleFileSelect(e){updateFileList(e.target);}
+function updateFileList(input){const div=document.getElementById(`${input.id}-list`); div.innerHTML=''; if(input.files.length>0){const names=Array.from(input.files).map(f=>f.name).join(', '); div.textContent=`${input.files.length} file(s): ${names.substring(0,30)}...`; } checkProcessButtonState();}
+function checkProcessButtonState(){const anyFiles=aiPlatforms.some(p=>document.getElementById(`${p}-file`).files.length>0); processBtn.disabled=!anyFiles;}
+
+async function processFiles(){
+loader.classList.remove('hidden'); main
