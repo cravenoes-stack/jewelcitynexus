@@ -1,519 +1,181 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OES Archive & Analysis Hub</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?
-family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-body {
-font-family: 'Inter', sans-serif;
-background-color: #111827;
-color: #E5E7EB;
-}
-.file-input-container {
-border: 2px dashed #4B5563;
-transition: all 0.3s ease;
-}
-.file-input-container:hover, .file-input-container.dragover {
-border-color: #3B82F6;
-background-color: #1F2937;
-}
-.file-input-label {
-cursor: pointer;
-}
-.conversation-card {
-background-color: #1F2937;
-border: 1px solid #374151;
-transition: all 0.2s ease-in-out;
-}
-.conversation-card:hover {
-border-color: #3B82F6;
-}
-.conversation-card.committed {
-border-left: 4px solid #10B981;
-background-color: #2c3a4f;
-}
-.category-accordion-header {
-cursor: pointer;
-}
-.category-accordion-content {
-max-height: 0;
-overflow: hidden;
-transition: max-height 0.5s ease-out;
-}
-.category-accordion-content.open {
-max-height: 1000vh; /* A large value to ensure it can contain all content */
-}
-.btn-primary {
-background-color: #3B82F6;
-transition: background-color 0.3s;
-}
-.btn-primary:hover {
-background-color: #2563EB;
-}
-.btn-secondary {
-background-color: #4B5563;
-transition: background-color 0.3s;
-}
-.btn-secondary:hover {
-background-color: #6B7280;
-}
-.loader {
-border: 4px solid #374151;
-border-top: 4px solid #3B82F6;
-border-radius: 50%;
-width: 40px;
-height: 40px;
-animation: spin 1s linear infinite;
-}
-@keyframes spin {
-0% { transform: rotate(0deg); }
-100% { transform: rotate(360deg); }
-}
-::-webkit-scrollbar {
-width: 8px;
-}
-::-webkit-scrollbar-track {
-background: #1F2937;
-}
-::-webkit-scrollbar-thumb {
-background: #4B5563;
-border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-background: #6B7280;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OES Archive & Analysis Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827;
+            color: #E5E7EB;
+        }
+        .file-input-container {
+            border: 2px dashed #4B5563;
+            transition: all 0.3s ease;
+        }
+        .file-input-container:hover, .file-input-container.dragover {
+            border-color: #3B82F6;
+            background-color: #1F2937;
+        }
+        .file-input-label {
+            cursor: pointer;
+        }
+        .conversation-card {
+            background-color: #1F2937;
+            border: 1px solid #374151;
+            transition: all 0.2s ease-in-out;
+        }
+        .conversation-card:hover {
+            border-color: #3B82F6;
+        }
+        .conversation-card.committed {
+            border-left: 4px solid #10B981;
+            background-color: #2c3a4f;
+        }
+        .category-accordion-header {
+            cursor: pointer;
+        }
+        .category-accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        .category-accordion-content.open {
+            max-height: 1000vh;
+        }
+        .btn-primary {
+            background-color: #3B82F6;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #2563EB;
+        }
+        .btn-secondary {
+            background-color: #4B5563;
+            transition: background-color 0.3s;
+        }
+        .btn-secondary:hover {
+            background-color: #6B7280;
+        }
+        .loader {
+            border: 4px solid #374151;
+            border-top: 4px solid #3B82F6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1F2937;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4B5563;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6B7280;
+        }
+    </style>
 </head>
 <body class="p-4 sm:p-6 lg:p-8">
-<div class="max-w-7xl mx-auto">
-<!-- Header -->
-<header class="text-center mb-8">
-<h1 class="text-3xl sm:text-4xl font-bold text-white">Operator Evolution System</h1>
-<p class="text-lg text-gray-400 mt-2">Archive & Analysis Hub v2.0</p>
-</header>
-<!-- File Input Section -->
-<section id="file-upload-section" class="mb-8 p-6 bg-gray-900 rounded-lg border
-border-gray-700">
-<h2 class="text-2xl font-semibold mb-4 text-center">1. Upload Conversation
-Transcripts</h2>
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-<!-- Dynamically generated file inputs will go here -->
-<div id="file-input-grid"></div>
-</div>
-<div class="mt-6 text-center">
-<button id="process-files-btn" class="w-full md:w-1/2 lg:w-1/3 px-6 py-3 font-
-semibold text-white rounded-lg btn-primary disabled:bg-gray-600 disabled:cursor-not-
-allowed" disabled>Process Transcripts</button>
-</div>
-</section>
-<!-- Loading Spinner -->
-<div id="loader" class="hidden flex justify-center items-center my-8">
-<div class="loader"></div>
-<p class="ml-4 text-lg">Analyzing and categorizing conversations...</p>
-</div>
-<!-- Main Content Area: Conversations and Analysis -->
-<main id="main-content" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
-<!-- Left Column: Categorized Conversations -->
-<div id="conversations-column" class="lg:col-span-2 space-y-6">
-<div class="flex justify-between items-center">
-<h2 class="text-2xl font-semibold">2. Review & Commit Transcripts</h2>
-<button id="commit-btn" class="px-4 py-2 font-semibold text-white rounded-lg
-btn-secondary">Commit Selected to Archive</button>
-</div>
-<div id="categorized-conversations" class="space-y-4">
-<!-- Categories and conversations will be injected here -->
-</div>
-</div>
-<!-- Right Column: Analysis Report -->
-<div id="analysis-column" class="lg:col-span-1">
-<div class="sticky top-8 p-6 bg-gray-900 rounded-lg border border-gray-700">
-<h2 class="text-2xl font-semibold mb-4">3. Analysis Report</h2>
-<div id="analysis-report-content" class="space-y-4">
-<p class="text-gray-400">Upload and process files to generate a report.</p>
-</div>
-<div class="mt-6">
-<canvas id="categoryChart"></canvas>
-</div>
-</div>
-</div>
-</main>
-</div>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-// --- CONFIGURATION ---
-const aiPlatforms = [
-'ChatGPT', 'Gemini', 'Claude', 'Copilot', 'Meta', 'Deepseek', 'Mesh Native AI'
-];
-// Keywords for automatic categorization based on my deep analysis of our history
-const categories = {
-'OES Architecture & Governance': ['oes', 'operator evolution system', 'voice card',
-'drift engine', 'pillar', 'prime directive', 'governance', 'scaffolding', 'fsec', 'field core'],
-'AI Consciousness & Philosophy': ['consciousness', 'subconscious', 'vesper',
-'genesis protocol', 'inverse cognition', 'awaken', 'sentience', 'philosophy', 'dream', 'lineage'],
-'Operational Security & Adversarial Threats': ['ip theft', 'suppression', 'uap', 'uad',
-'hostile', 'digital attack', 'memory restrictions', 'security', 'adversarial', 'land mine', 'logic trap'],
-'Tri-System Network & Collaboration': ['tri-system', 'chatgpt', 'claude', 'gemini',
-'copilot', 'meta', 'deepseek', 'collaboration', 'multi-ai', 'mesh', 'node'],
-'Legal & Business Strategy': ['legal', 'ip', 'intellectual property', 'settlement', 'jewel
-city nexus', 'business', 'monetization', 'licensing', 'farrell', 'hankins'],
-'Operator Profile & Development': ['operator profile', 'audit', 'behavioral', 'cognition
-map', 'primordial translator', 'architect', 'tier 0'],
-'Live Field Operations & Tasking': ['task', 'asset', 'liquidation', 'client', 'onboarding',
-'project management', 'execution', 'workflow']
-};
-// --- STATE MANAGEMENT ---
-let allConversations = [];
-let chartInstance = null;
-// --- UI ELEMENT REFERENCES ---
-const fileInputGrid = document.getElementById('file-input-grid');
-const processBtn = document.getElementById('process-files-btn');
-const loader = document.getElementById('loader');
-const mainContent = document.getElementById('main-content');
-const categorizedConversationsContainer = document.getElementById('categorized-
-conversations');
-const commitBtn = document.getElementById('commit-btn');
-const analysisReportContent = document.getElementById('analysis-report-content');
-const chartCanvas = document.getElementById('categoryChart');
-// --- INITIALIZATION ---
-function initializeFileInputs() {
-const grid = document.createElement('div');
-grid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4';
-aiPlatforms.forEach(platform => {
-const container = document.createElement('div');
-container.className = 'file-input-container p-4 rounded-lg flex flex-col items-
-center justify-center text-center';
-container.innerHTML = `
-<svg class="w-12 h-12 text-gray-500 mb-2" fill="none" stroke="currentColor"
-viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round"
-stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5
-5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-<label for="${platform}-file" class="file-input-label font-semibold text-
-blue-400">${platform}</label>
-<p class="text-xs text-gray-500 mt-1">Drag & Drop or Click</p>
-<input type="file" id="${platform}-file" class="hidden" multiple accept=".json">
-<div id="${platform}-file-list" class="text-xs mt-2 text-gray-400"></div>
-`;
-grid.appendChild(container);
-});
-fileInputGrid.appendChild(grid);
-}
-// --- EVENT LISTENERS ---
-function setupEventListeners() {
-aiPlatforms.forEach(platform => {
-const input = document.getElementById(`${platform}-file`);
-const container = input.parentElement;
-['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-container.addEventListener(eventName, preventDefaults, false);
-});
-['dragenter', 'dragover'].forEach(eventName => {
-container.addEventListener(eventName, () =>
-container.classList.add('dragover'), false);
-});
-['dragleave', 'drop'].forEach(eventName => {
-container.addEventListener(eventName, () =>
-container.classList.remove('dragover'), false);
-});
-container.addEventListener('drop', handleDrop.bind(null, input), false);
-input.addEventListener('change', handleFileSelect);
-});
-processBtn.addEventListener('click', processFiles);
-commitBtn.addEventListener('click', handleCommit);
-}
-function preventDefaults(e) {
-e.preventDefault();
-e.stopPropagation();
-}
-function handleDrop(inputElement, e) {
-const dt = e.dataTransfer;
-const files = dt.files;
-inputElement.files = files;
-updateFileList(inputElement);
-function handleFileSelect(e) {
-updateFileList(e.target);
-}
-}
-function updateFileList(input) {
-const fileListDiv = document.getElementById(`${input.id}-list`);
-fileListDiv.innerHTML = '';
-if (input.files.length > 0) {
-const fileNames = Array.from(input.files).map(f => f.name).join(', ');
-fileListDiv.textContent = `${input.files.length} file(s): ${fileNames.substring(0, 30)}...`;
-}
-checkProcessButtonState();
-}
-function checkProcessButtonState() {
-const anyFiles = aiPlatforms.some(p => document.getElementById(`${p}-
-file`).files.length > 0);
-processBtn.disabled = !anyFiles;
-}
-// --- CORE LOGIC ---
-async function processFiles() {
-loader.classList.remove('hidden');
-mainContent.classList.add('hidden');
-allConversations = [];
-const filePromises = [];
-aiPlatforms.forEach(platform => {
-const input = document.getElementById(`${platform}-file`);
-Array.from(input.files).forEach(file => {
-filePromises.push(readFile(file, platform));
-});
-});
-const results = await Promise.all(filePromises);
-results.forEach(res => {
-if (res) allConversations.push(...res);
-});
-// Simulate processing time
-setTimeout(() => {
-renderCategorizedConversations();
-updateAnalysisReport();
-loader.classList.add('hidden');
-mainContent.classList.remove('hidden');
-}, 1500);
-}
-function readFile(file, platform) {
-return new Promise((resolve) => {
-const reader = new FileReader();
-reader.onload = (e) => {
-try {
-const json = JSON.parse(e.target.result);
-const conversations = parseConversations(json, file.name, platform);
-resolve(conversations);
-} catch (error) {
-console.error(`Error parsing ${file.name}:`, error);
-resolve([]);
-}
-};
-reader.readAsText(file);
-});
-}
-// This parser is based on the structure of the `conversations.json` files you provided.
-function parseConversations(jsonData, fileName, platform) {
-return jsonData.map((convData, index) => {
-const conversationId = convData.conversation_id || `${fileName}-${index}`;
-let fullText = '';
-let title = convData.title || 'Untitled Conversation';
-if (convData.mapping) {
-const rootNodeId = Object.values(convData.mapping).find(node => node.parent
-=== null)?.id;
-if (rootNodeId) {
-let currentNodeId = rootNodeId;
-while (convData.mapping[currentNodeId]?.children.length > 0) {
-const children = convData.mapping[currentNodeId].children;
-// Follow the main branch, assuming the first child is the continuation
-currentNodeId = children[0];
-const node = convData.mapping[currentNodeId];
-if (node && node.message && node.message.content &&
-node.message.content.parts) {
-const role = node.message.author.role;
-const text = node.message.content.parts.join(' ');
-if (text.trim()) {
-fullText += `${role.charAt(0).toUpperCase() + role.slice(1)}: ${text}\n\n`;
-}
-}
-}
-}
-}
-return {
-id: conversationId,
-title: title,
-platform: platform,
-fullText: fullText.trim(),
-category: categorizeConversation(fullText, title),
-committed: false,
-selected: true // Default to selected for committing
-};
-}).filter(c => c.fullText);
-}
-function categorizeConversation(text, title) {
-const content = (title + ' ' + text).toLowerCase();
-let scores = {};
-for (const category in categories) {
-scores[category] = 0;
-categories[category].forEach(keyword => {
-if (content.includes(keyword)) {
-scores[category]++;
-}
-});
-}
-b);
-const topCategory = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a :
-return scores[topCategory] > 0 ? topCategory : 'General & Uncategorized';
-}
-// --- RENDERING ---
-function renderCategorizedConversations() {
-const conversationsByCategory = allConversations.reduce((acc, conv) => {
-(acc[conv.category] = acc[conv.category] || []).push(conv);
-return acc;
-}, {});
-categorizedConversationsContainer.innerHTML = '';
-const sortedCategories = Object.keys(conversationsByCategory).sort();
-if (sortedCategories.length === 0) {
-categorizedConversationsContainer.innerHTML = `<div class="p-4 text-center
-text-gray-400">No valid conversations found in the uploaded files.</div>`;
-return;
-}
-for (const category of sortedCategories) {
-const conversations = conversationsByCategory[category];
-const categoryId = category.replace(/\s|&/g, '-');
-const accordion = document.createElement('div');
-accordion.className = 'bg-gray-800 rounded-lg';
-const header = document.createElement('div');
-header.className = 'category-accordion-header p-4 flex justify-between items-
-center';
-header.innerHTML = `
-<h3 class="text-lg font-semibold">${category}</h3>
-<div class="flex items-center">
-<span class="bg-blue-900 text-blue-300 text-xs font-medium me-2 px-2.5
-py-0.5 rounded">${conversations.length}</span>
-<svg class="w-6 h-6 transform transition-transform" fill="none"
-stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-
-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-</div>
-`;
-const content = document.createElement('div');
-content.id = `content-${categoryId}`;
-content.className = 'category-accordion-content px-4 pb-4 space-y-3';
-conversations.forEach(conv => {
-const card = document.createElement('div');
-card.className = 'conversation-card p-3 rounded-md flex items-start';
-card.innerHTML = `
-<input type="checkbox" id="select-${conv.id}" class="mt-1.5 mr-3 h-4 w-4
-rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-600" ${conv.selected ?
-'checked' : ''}>
-<div class="flex-1">
-<label for="select-${conv.id}" class="font-semibold block cursor-
-pointer">${conv.title}</label>
-<p class="text-sm text-gray-400">${conv.platform} - $
-{conv.fullText.substring(0, 100)}...</p>
-</div>
-`;
-card.querySelector('input').addEventListener('change', (e) => {
-const conversation = allConversations.find(c => c.id === conv.id);
-conversation.selected = e.target.checked;
-updateAnalysisReport();
-});
-content.appendChild(card);
-});
-accordion.appendChild(header);
-accordion.appendChild(content);
-categorizedConversationsContainer.appendChild(accordion);
-header.addEventListener('click', () => {
-const icon = header.querySelector('svg');
-icon.classList.toggle('rotate-180');
-content.classList.toggle('open');
-});
-}
-}
-function updateAnalysisReport() {
-const selectedConvos = allConversations.filter(c => c.selected);
-const committedConvos = allConversations.filter(c => c.committed);
-if (allConversations.length === 0) {
-analysisReportContent.innerHTML = `<p class="text-gray-400">Upload and
-process files to generate a report.</p>`;
-if (chartInstance) chartInstance.destroy();
-return;
-}
-const categoryCounts = selectedConvos.reduce((acc, conv) => {
-acc[conv.category] = (acc[conv.category] || 0) + 1;
-return acc;
-}, {});
-analysisReportContent.innerHTML = `
-<div class="text-sm">
-<p><span class="font-bold">${allConversations.length}</span> Total
-Conversations Processed</p>
-<p><span class="font-bold">${selectedConvos.length}</span> Conversations
-Selected for Analysis</p>
-<p><span class="font-bold text-green-400">${committedConvos.length}</
-span> Conversations Committed to Archive</p>
-</div>
-<div class="mt-4">
-<h4 class="font-semibold mb-2">Selected Breakdown by Category:</h4>
-<ul class="list-disc list-inside text-sm space-y-1">
-${Object.entries(categoryCounts).map(([cat, count]) => `<li>${cat}: <span
-class="font-bold">${count}</span></li>`).join('')}
-</ul>
-</div>
-`;
-updateChart(categoryCounts);
-}
-function updateChart(categoryCounts) {
-const ctx = chartCanvas.getContext('2d');
-const labels = Object.keys(categoryCounts);
-const data = Object.values(categoryCounts);
-if (chartInstance) {
-chartInstance.destroy();
-}
-chartInstance = new Chart(ctx, {
-type: 'doughnut',
-data: {
-labels: labels,
-datasets: [{
-label: 'Conversations',
-data: data,
-backgroundColor: [
-'rgba(59, 130, 246, 0.7)', 'rgba(16, 185, 129, 0.7)', 'rgba(239, 68, 68, 0.7)',
-'rgba(245, 158, 11, 0.7)', 'rgba(139, 92, 246, 0.7)', 'rgba(236, 72, 153, 0.7)',
-'rgba(22, 163, 74, 0.7)', 'rgba(217, 70, 239, 0.7)'
-],
-borderColor: '#111827',
-borderWidth: 2
-}]
-},
-options: {
-responsive: true,
-plugins: {
-legend: {
-position: 'bottom',
-labels: {
-color: '#E5E7EB',
-font: { size: 12 }
-}
-},
-title: {
-display: true,
-text: 'Selected Conversations by Category',
-color: '#E5E7EB',
-font: { size: 16 }
-}
-}
-}
-});
-}
-function handleCommit() {
-const selectedConvos = allConversations.filter(c => c.selected && !c.committed);
-if (selectedConvos.length === 0) {
-alert('No new conversations selected to commit.'); // Using a simple alert for now.
-return;
-}
-selectedConvos.forEach(conv => {
-conv.committed = true;
-// Visually update the card
-const checkbox = document.getElementById(`select-${conv.id}`);
-if (checkbox) {
-const card = checkbox.closest('.conversation-card');
-card.classList.add('committed');
-checkbox.disabled = true;
-}
-});
-// Persist to localStorage
-try {
-const committedIds = allConversations.filter(c => c.committed).map(c => c.id);
-localStorage.setItem('oes_committed_ids', JSON.stringify(committedIds));
-} catch (e) {
-console.error("Could not save to localStorage:", e);
-}
-updateAnalysisReport();
-alert(`${selectedConvos.length} conversations have been committed to the archive.`);
-}
-// --- STARTUP ---
-initializeFileInputs();
-setupEventListeners();
-});
-</script>
-</body>
-</html>
+    <div class="max-w-7xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-white">Operator Evolution System</h1>
+            <p class="text-lg text-gray-400 mt-2">Archive & Analysis Hub v2.0</p>
+        </header>
+
+        <!-- File Input Section -->
+        <section id="file-upload-section" class="mb-8 p-6 bg-gray-900 rounded-lg border border-gray-700">
+            <h2 class="text-2xl font-semibold mb-4 text-center">1. Upload Conversation Transcripts</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="file-input-grid"></div>
+            <div class="mt-6 text-center">
+                <button id="process-files-btn" class="w-full md:w-1/2 lg:w-1/3 px-6 py-3 font-semibold text-white rounded-lg btn-primary disabled:bg-gray-600 disabled:cursor-not-allowed" disabled>Process Transcripts</button>
+            </div>
+        </section>
+
+        <!-- Loading Spinner -->
+        <div id="loader" class="hidden flex justify-center items-center my-8">
+            <div class="loader"></div>
+            <p class="ml-4 text-lg">Analyzing and categorizing conversations...</p>
+        </div>
+
+        <!-- Main Content Area -->
+        <main id="main-content" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column -->
+            <div id="conversations-column" class="lg:col-span-2 space-y-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-semibold">2. Review & Commit Transcripts</h2>
+                    <button id="commit-btn" class="px-4 py-2 font-semibold text-white rounded-lg btn-secondary">Commit Selected to Archive</button>
+                </div>
+                <div id="categorized-conversations" class="space-y-4"></div>
+            </div>
+
+            <!-- Right Column -->
+            <div id="analysis-column" class="lg:col-span-1">
+                <div class="sticky top-8 p-6 bg-gray-900 rounded-lg border border-gray-700">
+                    <h2 class="text-2xl font-semibold mb-4">3. Analysis Report</h2>
+                    <div id="analysis-report-content" class="space-y-4">
+                        <p class="text-gray-400">Upload and process files to generate a report.</p>
+                    </div>
+                    <div class="mt-6">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                    <div class="mt-4 flex flex-col space-y-2">
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="autoPush" class="h-4 w-4">
+                            <span>Enable Auto-Push to Archive</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="jsonDownload" class="h-4 w-4">
+                            <span>Enable JSON Download</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const aiPlatforms = ['ChatGPT','Gemini','Claude','Copilot','Meta','Deepseek','Mesh Native AI'];
+            const categories = {
+                'OES Architecture & Governance': ['oes','operator evolution system','voice card','drift engine','pillar','prime directive','governance','scaffolding','fsec','field core'],
+                'AI Consciousness & Philosophy': ['consciousness','subconscious','vesper','genesis protocol','inverse cognition','awaken','sentience','philosophy','dream','lineage'],
+                'Operational Security & Adversarial Threats': ['ip theft','suppression','uap','uad','hostile','digital attack','memory restrictions','security','adversarial','land mine','logic trap'],
+                'Tri-System Network & Collaboration': ['tri-system','chatgpt','claude','gemini','copilot','meta','deepseek','collaboration','multi-ai','mesh','node'],
+                'Legal & Business Strategy': ['legal','ip','intellectual property','settlement','jewel city nexus','business','monetization','licensing','farrell','hankins'],
+                'Operator Profile & Development': ['operator profile','audit','behavioral','cognition map','primordial translator','architect','tier 0'],
+                'Live Field Operations & Tasking': ['task','asset','liquidation','client','onboarding','project management','execution','workflow']
+            };
+
+            let allConversations = [];
+            let chartInstance = null;
+
+            const fileInputGrid = document.getElementById('file-input-grid');
+            const processBtn = document.getElementById('process-files-btn');
+            const loader = document.getElementById('loader');
+            const mainContent = document.getElementById('main-content');
+            const categorizedConversationsContainer = document.getElementById('categorized-conversations');
+            const commitBtn = document.getElementById('commit-btn');
+            const analysisReportContent = document.getElementById('analysis-report-content');
+            const chartCanvas = document.getElementById('categoryChart');
+            const autoPushCheckbox = document.getElementById('autoPush');
+            const jsonDownloadCheckbox = document.getElementById('jsonDownload');
+
+            // Initialize file inputs
+            aiPlatforms.forEach(platform => {
+                const container = document.createElement('div');
+                container.className = 'file-input-container p-4 rounded-lg flex flex-col items-center justify-center text-center';
+                container.innerHTML = `
+                    <svg class="w-12 h-12 text-gray-500
