@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced File Processor | Conversation Analysis</title>
+    <title>JewelCityNexus File Processor</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -586,17 +586,33 @@
             <div class="files-section">
                 <h2>Processed Files</h2>
                 
+                <!-- Original categories from the reference site -->
                 <div class="category-section">
                     <div class="category-header">
                         <div class="category-icon">
                             <i class="fas fa-couch"></i>
                         </div>
-                        <h2>Furniture Design Conversations</h2>
+                        <h2>Loveseat Upholstery Design Advice</h2>
                     </div>
                     <div class="file-list" id="design-files">
                         <div class="no-files" id="no-design-files">
                             <p><i class="fas fa-couch" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i></p>
                             <p>No design files processed yet.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="category-section">
+                    <div class="category-header">
+                        <div class="category-icon">
+                            <i class="fas fa-ruler-combined"></i>
+                        </div>
+                        <h2>Measurement Guides</h2>
+                    </div>
+                    <div class="file-list" id="measurement-files">
+                        <div class="no-files" id="no-measurement-files">
+                            <p><i class="fas fa-ruler-combined" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i></p>
+                            <p>No measurement files processed yet.</p>
                         </div>
                     </div>
                 </div>
@@ -621,7 +637,7 @@
                         <div class="category-icon">
                             <i class="fas fa-star"></i>
                         </div>
-                        <h2>Customer Feedback</h2>
+                        <h2>Customer Feedback & Reviews</h2>
                     </div>
                     <div class="file-list" id="feedback-files">
                         <div class="no-files" id="no-feedback-files">
@@ -699,18 +715,23 @@
             determineCategory: function(filename, content) {
                 const lowerContent = content.toLowerCase();
                 
-                if (lowerContent.includes('design') || lowerContent.includes('upholstery') || 
-                    lowerContent.includes('fabric') || lowerContent.includes('color')) {
+                // Using the original categories from the reference site
+                if (lowerContent.includes('upholstery') || lowerContent.includes('design') || 
+                    lowerContent.includes('fabric') || lowerContent.includes('color') ||
+                    lowerContent.includes('loveseat')) {
                     return 'design';
+                } else if (lowerContent.includes('measure') || lowerContent.includes('dimension') || 
+                          lowerContent.includes('size') || lowerContent.includes('guide')) {
+                    return 'measurement';
                 } else if (lowerContent.includes('technical') || lowerContent.includes('spec') || 
-                          lowerContent.includes('measure') || lowerContent.includes('material')) {
+                          lowerContent.includes('material') || lowerContent.includes('frame')) {
                     return 'technical';
                 } else if (lowerContent.includes('feedback') || lowerContent.includes('review') || 
                           lowerContent.includes('customer') || lowerContent.includes('client')) {
                     return 'feedback';
                 }
                 
-                return 'other';
+                return 'design'; // Default category
             },
             
             formatFileSize: function(bytes) {
@@ -1095,6 +1116,12 @@
                         category: 'design'
                     },
                     {
+                        name: 'Measurement Guide.txt',
+                        type: 'text',
+                        content: `Expert: For a standard loveseat, the width should be between 48-72 inches.\nClient: What about the depth?\nExpert: Typically 35-40 inches for comfortable seating.\nClient: And the height?\nExpert: Standard seat height is 18-20 inches, with total height around 36 inches.`,
+                        category: 'measurement'
+                    },
+                    {
                         name: 'Technical Specifications.json',
                         type: 'JSON',
                         content: JSON.stringify({
@@ -1114,7 +1141,7 @@
                         category: 'technical'
                     },
                     {
-                        name: 'Customer Feedback.csv',
+                        name: 'Customer Reviews.csv',
                         type: 'CSV',
                         content: `Customer,Rating,Comments\nSarah Johnson,5,"The loveseat is incredibly comfortable and looks even better in person!"\nMichael Brown,4,"Good quality, but the assembly instructions could be clearer"\nEmily Davis,5,"Perfect size for our apartment and the upholstery is beautiful"`,
                         category: 'feedback'
