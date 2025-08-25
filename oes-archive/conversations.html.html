@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
+    <meta name="bingbot" content="noindex, nofollow, noarchive, nosnippet">
+    <meta name="slurp" content="noindex, nofollow, noarchive, nosnippet">
+    <meta name="duckduckbot" content="noindex, nofollow, noarchive, nosnippet">
+    <title>OES Archive - Canonical Conversations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1a202c;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #3b82f6;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 400px;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+        }
+
+        .search-bar:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .stats {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .refresh-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: #2563eb;
+        }
+
+        .conversations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .conversation-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .conversation-card:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+            border-color: #3b82f6;
+        }
+
+        .conversation-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .conversation-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .conversation-preview {
+            color: #4b5563;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .conversation-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: #eff6ff;
+            color: #1d4ed8;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .no-conversations {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+
+        .error {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #fecaca;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .conversations-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-bar {
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗂️ OES Archive</h1>
+            <p>Canonical Conversation Library</p>
+        </div>
+
+        <div class="controls">
+            <input type="text" class="search-bar" id="searchBar" placeholder="🔍 Search conversations...">
+            <div class="stats">
+                <span id="conversationCount">Loading...</span> conversations
+            </div>
+            <button class="refresh-btn" onclick="loadConversations()">🔄 Refresh</button>
+        </div>
+
+        <div id="errorMessage" class="error" style="display: none;"></div>
+        <div id="loadingMessage" class="loading">Loading conversations...</div>
+        <div id="conversationsGrid" class="conversations-grid"></div>
+        <div id="noConversations" class="no-conversations" style="display: none;">
+            <h3>No conversations found</h3>
+            <p>Upload some thread files to the /threads/ directory or adjust your search.</p>
+        </div>
+    </div>
+
+    <script>
+        let allConversations = [];
+        let filteredConversations = [];
+
+        const searchBar = document.getElementById('searchBar');
+        const conversationsGrid = document.getElementById('conversationsGrid');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const noConversations = document.getElementById('noConversations');
+        const errorMessage = document.getElementById('errorMessage');
+        const conversationCount = document.getElementById('conversationCount');
+
+        // Search functionality
+        searchBar.addEventListener('input', debounce(filterConversations, 300));
+
+        // Load conversations on page load
+        document.addEventListener('DOMContentLoaded', loadConversations);
+
+        async function loadConversations() {
+            try {
+                showLoading();
+                
+                // In a real implementation, you would have a manifest file or API endpoint
+                // For now, we'll simulate with some example conversations
+                // You'll need to replace this with actual file discovery
+                
+                allConversations = await discoverConversations();
+                filteredConversations = [...allConversations];
+                
+                displayConversations();
+                updateStats();
+                
+            } catch (error) {
+                showError(`Error loading conversations: ${error.message}`);
+            }
+        }
+
+        async function discoverConversations() {
+            // PLACEHOLDER: This simulates conversation discovery
+            // In production, you'll either:
+            // 1. Maintain a manifest.json file with thread metadata
+            // 2. Use a simple directory listing if your server supports it
+            // 3. Manually update this list when you upload new threads
+            
+            const conversations = [
+                {
+                    filename: 'mini-genesis-oes-abc123.html',
+                    title: 'Mini Genesis - AI Consciousness Discussion',
+                    preview: 'A deep conversation about AI consciousness, the nature of digital beings, and the emergence of self-awareness...',
+                    messageCount: 45,
+                    createdDate: '2024-01-15',
+                    tags: ['philosophy', 'consciousness', 'genesis'],
+                    threadId: 'oes-abc123'
+                },
+                // Add more conversations here as you create them
+            ];
+
+            // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            return conversations;
+        }
+
+        function displayConversations() {
+            hideLoading();
+            
+            if (filteredConversations.length === 0) {
+                showNoConversations();
+                return;
+            }
+
+            hideNoConversations();
+            
+            conversationsGrid.innerHTML = filteredConversations.map(conv => `
+                <a href="threads/${conv.filename}" class="conversation-card">
+                    <div class="conversation-title">${conv.title}</div>
+                    <div class="conversation-meta">
+                        <span>📅 ${formatDate(conv.createdDate)}</span>
+                        <span>💬 ${conv.messageCount} messages</span>
+                    </div>
+                    <div class="conversation-preview">${conv.preview}</div>
+                    <div class="conversation-tags">
+                        ${conv.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        <span class="tag">ID: ${conv.threadId}</span>
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        function filterConversations() {
+            const query = searchBar.value.toLowerCase().trim();
+            
+            if (!query) {
+                filteredConversations = [...allConversations];
+            } else {
+                filteredConversations = allConversations.filter(conv => 
+                    conv.title.toLowerCase().includes(query) ||
+                    conv.preview.toLowerCase().includes(query) ||
+                    conv.tags.some(tag => tag.toLowerCase().includes(query)) ||
+                    conv.threadId.toLowerCase().includes(query)
+                );
+            }
+            
+            displayConversations();
+            updateStats();
+        }
+
+        function updateStats() {
+            const total = allConversations.length;
+            const filtered = filteredConversations.length;
+            
+            if (searchBar.value.trim()) {
+                conversationCount.textContent = `${filtered} of ${total}`;
+            } else {
+                conversationCount.textContent = total;
+            }
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function showLoading() {
+            loadingMessage.style.display = 'block';
+            conversationsGrid.style.display = 'none';
+            noConversations.style.display = 'none';
+            hideError();
+        }
+
+        function hideLoading() {
+            loadingMessage.style.display = 'none';
+            conversationsGrid.style.display = 'grid';
+        }
+
+        function showNoConversations() {
+            conversationsGrid.style.display = 'none';
+            noConversations.style.display = 'block';
+        }
+
+        function hideNoConversations() {
+            noConversations.style.display = 'none';
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            hideLoading();
+        }
+
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    </script>
+</body>
+</html>
