@@ -116,19 +116,20 @@
                     
                     let allFiles = [];
                     // Get all HTML files from the top-level 'threads' directory
-                    allFiles = allFiles.concat((await topLevelResponse.json()).filter(item => item.name.endsWith('.html') && item.type === 'file'));
-                    
+                    const topLevelFiles = (await topLevelResponse.json()).filter(item => item.name.endsWith('.html') && item.type === 'file');
+                    topLevelFiles.forEach(file => allFiles.push({ file, path: '' }));
+
                     // If the 'uncategorized' directory exists and the fetch was successful, add its files
                     if (uncategorizedResponse.ok) {
                         const uncategorizedFiles = (await uncategorizedResponse.json()).filter(item => item.name.endsWith('.html') && item.type === 'file');
-                        allFiles = allFiles.concat(uncategorizedFiles);
+                        uncategorizedFiles.forEach(file => allFiles.push({ file, path: 'uncategorized/' }));
                     }
 
                     let sections = {};
                     Object.keys(platformDetails).forEach(p => sections[p] = []);
                     
-                    for (const file of allFiles) {
-                        const metadata = await getMetadataFromHtml(file.download_url);
+                    for (const item of allFiles) {
+                        const metadata = await getMetadataFromHtml(item.file.download_url);
                         let platformName = 'uncategorized';
                         if (metadata.threadId.toLowerCase().includes('chatgpt')) {
                             platformName = 'chatgpt';
@@ -137,7 +138,7 @@
                         } else if (metadata.threadId.toLowerCase().includes('claude')) {
                             platformName = 'claude';
                         }
-                        sections[platformName].push({ file, metadata });
+                        sections[platformName].push({ file: item.file, metadata, path: item.path });
                     }
 
                     let htmlContent = '';
@@ -157,7 +158,7 @@
                             const grid = document.getElementById(`${platformName}-grid`);
                             let cardsHtml = '';
                             for (const thread of sections[platformName]) {
-                                const liveUrl = `https://cravenoes-stack.github.io/jewelcitynexus/oes-archive/threads/${platformName !== 'uncategorized' ? platformName + '/' : ''}${thread.file.name}`;
+                                const liveUrl = `https://cravenoes-stack.github.io/jewelcitynexus/oes-archive/threads/${thread.path}${thread.file.name}`;
                                 cardsHtml += createCardHtml(liveUrl, thread.metadata, thread.file, platformName);
                             }
                             grid.innerHTML = cardsHtml;
