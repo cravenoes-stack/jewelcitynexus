@@ -77,7 +77,6 @@
             const libraryContent = document.getElementById('library-content');
             const loader = document.getElementById('loader');
 
-            // CORRECTED API URL to point to the new, single 'oes-archive' path
             const GITHUB_REPO_API_URL = 'https://api.github.com/repos/cravenoes-stack/jewelcitynexus/contents/oes-archive/threads';
 
             const platformDetails = {
@@ -114,22 +113,26 @@
                     const rootContents = await response.json();
 
                     let sections = {};
-                    const platformFolders = [];
-                    
-                    // Initialize sections for all known platforms
                     Object.keys(platformDetails).forEach(p => sections[p] = []);
 
-                    rootContents.forEach(item => {
-                        if (item.type === 'dir' && platformDetails[item.name]) {
-                            platformFolders.push(item);
-                        } else if (item.name.endsWith('.html')) {
-                            sections.uncategorized.push(item);
+                    const htmlFiles = rootContents.filter(item => item.name.endsWith('.html') && item.type === 'file');
+                    
+                    for (const file of htmlFiles) {
+                        const metadata = await getMetadataFromHtml(file.download_url);
+                        let platformName = 'uncategorized';
+                        if (metadata.threadId.toLowerCase().includes('chatgpt')) {
+                            platformName = 'chatgpt';
+                        } else if (metadata.threadId.toLowerCase().includes('gemini')) {
+                            platformName = 'gemini';
+                        } else if (metadata.threadId.toLowerCase().includes('claude')) {
+                            platformName = 'claude';
                         }
-                    });
+                        sections[platformName].push({ file, metadata });
+                    }
 
                     let htmlContent = '';
                     for (const platformName in platformDetails) {
-                         htmlContent += `
+                        htmlContent += `
                             <section id="section-${platformName}" class="mb-12 hidden">
                                 <h2 class="text-2xl font-bold border-b-2 ${platformDetails[platformName].color} pb-2 mb-6">${platformDetails[platformName].name} Canonical Threads</h2>
                                 <div id="${platformName}-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
@@ -138,36 +141,16 @@
                     }
                     libraryContent.innerHTML = htmlContent;
 
-                    // Process uncategorized files
-                    if (sections.uncategorized.length > 0) {
-                        document.getElementById('section-uncategorized').classList.remove('hidden');
-                        const grid = document.getElementById('uncategorized-grid');
-                        let cardsHtml = '';
-                        for (const thread of sections.uncategorized) {
-                             const liveUrl = `https://cravenoes-stack.github.io/jewelcitynexus/oes-archive/threads/${thread.name}`;
-                             const metadata = await getMetadataFromHtml(thread.download_url);
-                             cardsHtml += createCardHtml(liveUrl, metadata, thread, 'uncategorized');
-                        }
-                        grid.innerHTML = cardsHtml;
-                    }
-
-                    // Process platform folders
-                    for (const folder of platformFolders) {
-                        if (platformDetails[folder.name]) {
-                            document.getElementById(`section-${folder.name}`).classList.remove('hidden');
-                            const threadGrid = document.getElementById(`${folder.name}-grid`);
-                            const threadResponse = await fetch(folder.url);
-                            const threads = await threadResponse.json();
-                            
-                            let threadCardsHtml = '';
-                            for (const thread of threads) {
-                                if (thread.name.endsWith('.html')) {
-                                    const liveUrl = `https://cravenoes-stack.github.io/jewelcitynexus/oes-archive/threads/${folder.name}/${thread.name}`;
-                                    const metadata = await getMetadataFromHtml(thread.download_url);
-                                    threadCardsHtml += createCardHtml(liveUrl, metadata, thread, folder.name);
-                                }
+                    for (const platformName in sections) {
+                        if (sections[platformName].length > 0) {
+                            document.getElementById(`section-${platformName}`).classList.remove('hidden');
+                            const grid = document.getElementById(`${platformName}-grid`);
+                            let cardsHtml = '';
+                            for (const thread of sections[platformName]) {
+                                const liveUrl = `https://cravenoes-stack.github.io/jewelcitynexus/oes-archive/threads/${thread.file.name}`;
+                                cardsHtml += createCardHtml(liveUrl, thread.metadata, thread.file, platformName);
                             }
-                            threadGrid.innerHTML = threadCardsHtml || `<p class="text-gray-500 col-span-full">No threads found in this category.</p>`;
+                            grid.innerHTML = cardsHtml;
                         }
                     }
 
