@@ -77,9 +77,9 @@
             const libraryContent = document.getElementById('library-content');
             const loader = document.getElementById('loader');
 
-            const GITHUB_REPO_API_URL = 'https://api.github.com/repos/cravenoes-stack/jewelcitynexus/contents/oes-archive/threads';
-            const UNCATEGORIZED_API_URL = `${GITHUB_REPO_API_URL}/uncategorized`;
-
+            const REPO_ROOT_URL = 'https://cravenoes-stack.github.io/jewelcitynexus/';
+            const GITHUB_API_URL = 'https://api.github.com/repos/cravenoes-stack/jewelcitynexus/contents/oes-archive/threads';
+            
             const platformDetails = {
                 'uncategorized': { name: 'Uncategorized', color: 'border-gray-500', icon: 'fa-question-circle' },
                 'chatgpt': { name: 'ChatGPT', color: 'border-green-500', icon: 'fa-robot' },
@@ -109,20 +109,22 @@
             
             async function buildLibrary() {
                 try {
-                    const topLevelResponse = await fetch(GITHUB_REPO_API_URL);
-                    const uncategorizedResponse = await fetch(UNCATEGORIZED_API_URL);
-
+                    const topLevelResponse = await fetch(GITHUB_API_URL);
                     if (!topLevelResponse.ok) throw new Error(`GitHub API request failed: ${topLevelResponse.statusText}`);
                     
+                    const rootContents = await topLevelResponse.json();
                     let allFiles = [];
-                    // Get all HTML files from the top-level 'threads' directory
-                    const topLevelFiles = (await topLevelResponse.json()).filter(item => item.name.endsWith('.html') && item.type === 'file');
-                    topLevelFiles.forEach(file => allFiles.push({ file, path: '' }));
 
-                    // If the 'uncategorized' directory exists and the fetch was successful, add its files
-                    if (uncategorizedResponse.ok) {
-                        const uncategorizedFiles = (await uncategorizedResponse.json()).filter(item => item.name.endsWith('.html') && item.type === 'file');
-                        uncategorizedFiles.forEach(file => allFiles.push({ file, path: 'uncategorized/' }));
+                    for (const item of rootContents) {
+                        if (item.type === 'file' && item.name.endsWith('.html')) {
+                            allFiles.push({ file: item, path: 'oes-archive/threads/' });
+                        } else if (item.type === 'dir' && item.name === 'uncategorized') {
+                            const uncatResponse = await fetch(item.url);
+                            const uncatFiles = (await uncatResponse.json()).filter(f => f.type === 'file' && f.name.endsWith('.html'));
+                            uncatFiles.forEach(file => {
+                                allFiles.push({ file, path: 'oes-archive/threads/uncategorized/' });
+                            });
+                        }
                     }
 
                     let sections = {};
@@ -158,7 +160,7 @@
                             const grid = document.getElementById(`${platformName}-grid`);
                             let cardsHtml = '';
                             for (const thread of sections[platformName]) {
-                                const liveUrl = `https://cravenoes-stack.github.io/jewelcitynexus/oes-archive/threads/${thread.path}${thread.file.name}`;
+                                const liveUrl = `${REPO_ROOT_URL}${thread.path}${thread.file.name}`;
                                 cardsHtml += createCardHtml(liveUrl, thread.metadata, thread.file, platformName);
                             }
                             grid.innerHTML = cardsHtml;
