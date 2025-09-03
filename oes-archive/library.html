@@ -77,8 +77,7 @@
             const libraryContent = document.getElementById('library-content');
             const loader = document.getElementById('loader');
 
-            const REPO_ROOT_URL = 'https://cravenoes-stack.github.io/jewelcitynexus/';
-            const GITHUB_API_URL = 'https://api.github.com/repos/cravenoes-stack/jewelcitynexus/contents/oes-archive/threads';
+            const METADATA_URL = 'https://cravenoes-stack.github.io/jewelcitynexus/oes-archive/threads_metadata.json';
             
             const platformDetails = {
                 'uncategorized': { name: 'Uncategorized', color: 'border-gray-500', icon: 'fa-question-circle' },
@@ -87,61 +86,26 @@
                 'gemini': { name: 'Gemini', color: 'border-purple-500', icon: 'fa-gem' }
             };
 
-            async function getMetadataFromHtml(url) {
-                try {
-                    const response = await fetch(url);
-                    if (!response.ok) return { title: "Title Not Found", description: "Could not load description.", threadId: "N/A" };
-                    const text = await response.text();
-                    const titleMatch = text.match(/<title>(.*?)<\/title>/i);
-                    const descriptionMatch = text.match(/<meta name="description" content="(.*?)"/i);
-                    const threadIdMatch = text.match(/<meta name="thread-id" content="(.*?)"/i);
-                    
-                    return {
-                        title: titleMatch ? titleMatch[1].trim() : "Untitled Thread",
-                        description: descriptionMatch ? descriptionMatch[1].trim() : "No description available.",
-                        threadId: threadIdMatch ? threadIdMatch[1].trim() : "N/A"
-                    };
-                } catch (error) {
-                    console.error('Error fetching metadata from ' + url + ':', error);
-                    return { title: "Could not load title", description: "Error fetching content.", threadId: "Error" };
-                }
-            }
-            
             async function buildLibrary() {
                 try {
-                    const topLevelResponse = await fetch(GITHUB_API_URL);
-                    if (!topLevelResponse.ok) throw new Error(`GitHub API request failed: ${topLevelResponse.statusText}`);
-                    
-                    const rootContents = await topLevelResponse.json();
-                    let allFiles = [];
-
-                    for (const item of rootContents) {
-                        if (item.type === 'file' && item.name.endsWith('.html')) {
-                            allFiles.push({ file: item, path: 'oes-archive/threads/' });
-                        } else if (item.type === 'dir' && item.name === 'uncategorized') {
-                            const uncatResponse = await fetch(item.url);
-                            const uncatFiles = (await uncatResponse.json()).filter(f => f.type === 'file' && f.name.endsWith('.html'));
-                            uncatFiles.forEach(file => {
-                                allFiles.push({ file, path: 'oes-archive/threads/uncategorized/' });
-                            });
-                        }
-                    }
+                    const response = await fetch(METADATA_URL);
+                    if (!response.ok) throw new Error(`Failed to load metadata: ${response.statusText}`);
+                    const allThreads = await response.json();
 
                     let sections = {};
                     Object.keys(platformDetails).forEach(p => sections[p] = []);
                     
-                    for (const item of allFiles) {
-                        const metadata = await getMetadataFromHtml(item.file.download_url);
+                    allThreads.forEach(thread => {
                         let platformName = 'uncategorized';
-                        if (metadata.threadId.toLowerCase().includes('chatgpt')) {
+                        if (thread.threadId.toLowerCase().includes('chatgpt')) {
                             platformName = 'chatgpt';
-                        } else if (metadata.threadId.toLowerCase().includes('gemini')) {
+                        } else if (thread.threadId.toLowerCase().includes('gemini')) {
                             platformName = 'gemini';
-                        } else if (metadata.threadId.toLowerCase().includes('claude')) {
+                        } else if (thread.threadId.toLowerCase().includes('claude')) {
                             platformName = 'claude';
                         }
-                        sections[platformName].push({ file: item.file, metadata, path: item.path });
-                    }
+                        sections[platformName].push(thread);
+                    });
 
                     let htmlContent = '';
                     for (const platformName in platformDetails) {
@@ -160,8 +124,7 @@
                             const grid = document.getElementById(`${platformName}-grid`);
                             let cardsHtml = '';
                             for (const thread of sections[platformName]) {
-                                const liveUrl = `${REPO_ROOT_URL}${thread.path}${thread.file.name}`;
-                                cardsHtml += createCardHtml(liveUrl, thread.metadata, thread.file, platformName);
+                                cardsHtml += createCardHtml(thread.url, thread, platformName);
                             }
                             grid.innerHTML = cardsHtml;
                         }
@@ -169,13 +132,13 @@
 
                 } catch (error) {
                     console.error("Failed to build library:", error);
-                    libraryContent.innerHTML = `<div class="col-span-full text-center p-8 bg-red-900/20 rounded-lg border border-red-500"><h3 class="text-xl font-bold text-red-400">Error Loading Archive</h3><p class="text-red-300 mt-2">Could not automatically load threads from GitHub. The repository may be private or the API rate limit might be reached.</p></div>`;
+                    libraryContent.innerHTML = `<div class="col-span-full text-center p-8 bg-red-900/20 rounded-lg border border-red-500"><h3 class="text-xl font-bold text-red-400">Error Loading Archive</h3><p class="text-red-300 mt-2">Could not load archive metadata. This might be a server-side issue or the JSON file is missing.</p></div>`;
                 } finally {
                     loader.style.display = 'none';
                 }
             }
 
-            function createCardHtml(liveUrl, metadata, thread, platformName) {
+            function createCardHtml(liveUrl, metadata, platformName) {
                 const details = platformDetails[platformName];
                 return `
                     <a href="${liveUrl}" target="_blank" class="thread-card block p-5 rounded-lg">
