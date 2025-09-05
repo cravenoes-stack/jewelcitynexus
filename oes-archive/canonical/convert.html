@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Convert Files to HTML</title>
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
+  <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+  <style>
+    body { font-family: Inter, Arial, sans-serif; background: #15171a; color: #e5e5e5; padding: 2rem; }
+    h1 { color: #3b82f6; }
+    input[type="file"] { margin: 1rem 0; }
+    .file-block { background: #20232a; padding: 1rem; margin-bottom: 2rem; border-radius: 8px; border-left: 6px solid #3b82f6; }
+    .file-title { color: #fff; font-size: 1.1em; margin-bottom: 8px; }
+    .action-btn { background: #3b82f6; color: #fff; border: none; border-radius: 5px; padding: 8px 12px; cursor: pointer; margin: 1rem 0;}
+    .action-btn:disabled { background: #444; }
+    .preview { background: #15171a; border: 1px solid #333; padding: 1rem; margin-top: 1rem; max-height: 200px; overflow-y: auto; }
+  </style>
+</head>
+<body>
+  <h1>Convert Files to HTML</h1>
+  <input type="file" id="file-input" multiple />
+  <div id="results"></div>
+  <script>
+    const input = document.getElementById('file-input');
+    const results = document.getElementById('results');
+    input.addEventListener('change', async (e) => {
+      results.innerHTML = "";
+      const files = Array.from(input.files);
+      for (const file of files) {
+        const block = document.createElement('div');
+        block.className = "file-block";
+        block.innerHTML = `<div class="file-title">${file.name}</div>`;
+        results.appendChild(block);
+
+        let html = "";
+        if (file.name.endsWith('.md')) {
+          const text = await file.text();
+          const converter = new showdown.Converter();
+          html = converter.makeHtml(text);
+        } else if (file.name.endsWith('.txt')) {
+          const text = await file.text();
+          html = `<pre>${escapeHtml(text)}</pre>`;
+        } else if (file.name.endsWith('.docx')) {
+          const arrayBuffer = await file.arrayBuffer();
+          const result = await mammoth.convertToHtml({arrayBuffer});
+          html = result.value;
+        } else if (file.name.endsWith('.pdf')) {
+          html = "PDF preview not supported here. Please convert PDF to HTML using an external tool (recommend: pdf2htmlEX, or upload and download for AI context).";
+        } else {
+          html = "Unsupported file type.";
+        }
+
+        // Show preview of HTML
+        const preview = document.createElement('div');
+        preview.className = "preview";
+        preview.innerHTML = html;
+        block.appendChild(preview);
+
+        // Add download button
+        const downloadBtn = document.createElement('button');
+        downloadBtn.className = "action-btn";
+        downloadBtn.textContent = "Download HTML";
+        downloadBtn.onclick = () => {
+          const blob = new Blob([wrapHtml(file.name, html)], { type: "text/html" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = file.name.replace(/\.[^/.]+$/, "") + ".html";
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }, 100);
+        };
+        block.appendChild(downloadBtn);
+      }
+    });
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, function(m) {
+        return ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        })[m];
+      });
+    }
+
+    function wrapHtml(title, body) {
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${title}</title>
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+</head>
+<body>
+${body}
+</body>
+</html>`;
+    }
+  </script>
+</body>
+</html>
