@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OES Data Ingestion Terminal</title>
+    <title>OES Data Conversion Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,7 +19,6 @@
             align-items: center;
             padding: 2rem;
             line-height: 1.6;
-            transition: background-color 0.5s ease;
         }
         .container {
             width: 100%;
@@ -31,7 +30,6 @@
             border-radius: 8px;
             padding: 1.5rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
         }
         .drag-zone {
             border: 2px dashed #30363d;
@@ -53,26 +51,12 @@
             background-color: rgba(100, 255, 100, 0.2);
             color: #86efac;
         }
-        .json-toggle {
-            cursor: pointer;
-            color: #58a6ff;
-        }
-        .json-toggle:hover {
-            text-decoration: underline;
-        }
-        .thread-content pre {
+        pre {
             white-space: pre-wrap;
             word-wrap: break-word;
             font-size: 0.875rem;
             max-height: 400px;
             overflow-y: auto;
-        }
-        .thread-content .json-viewer {
-            max-height: 400px;
-            overflow-y: auto;
-            background-color: #0d1117;
-            padding: 1rem;
-            border-radius: 4px;
         }
     </style>
 </head>
@@ -80,25 +64,36 @@
     <div class="container space-y-8">
         <!-- Header Section -->
         <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-200">OES Data Ingestion Terminal</h1>
-            <p class="mt-2 text-gray-400">Securely ingest and process data for canonical archival.</p>
+            <h1 class="text-4xl font-bold text-gray-200">OES Data Conversion Engine</h1>
+            <p class="mt-2 text-gray-400">Convert data threads into canonical, viewable web pages.</p>
         </header>
 
         <!-- File Upload Section -->
         <div class="card">
-            <h2 class="text-xl font-bold mb-4">Input Data Stream</h2>
+            <h2 class="text-xl font-bold mb-4">Select Source File</h2>
             <div id="drag-zone" class="drag-zone">
-                <p class="text-gray-400">Drag & drop files here, or <span class="text-blue-400 font-semibold">click to establish connection</span></p>
-                <input type="file" id="fileInput" class="hidden" multiple>
+                <p class="text-gray-400">Drag & drop a file here, or <span class="text-blue-400 font-semibold">click to browse</span></p>
+                <input type="file" id="fileInput" class="hidden" accept=".txt,.json,.log,.md,.html">
             </div>
             <div id="message-box" class="mt-4 text-center hidden p-2 rounded-md font-medium"></div>
         </div>
+
+        <!-- Conversion and Download Section -->
+        <div class="card space-y-4 hidden" id="action-area">
+            <h2 class="text-xl font-bold mb-2">Convert & Download</h2>
+            <button id="convertBtn" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200">
+                Generate Canonical Web Page
+            </button>
+            <a id="downloadLink" class="hidden w-full text-center bg-gray-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-gray-700 transition-colors duration-200" download="converted_data.html">
+                Download Converted Page
+            </a>
+        </div>
         
-        <!-- File Display Section -->
-        <div class="card">
-            <h2 class="text-xl font-bold mb-4">Ingested Threads</h2>
-            <div id="threads-container" class="space-y-6">
-                <p class="text-gray-500 text-center">Awaiting data stream input...</p>
+        <!-- Preview Section -->
+        <div class="card hidden" id="preview-area">
+            <h2 class="text-xl font-bold mb-4">Live Preview</h2>
+            <div id="preview-content" class="bg-gray-800 rounded-md p-4 max-h-96 overflow-y-auto">
+                <p class="text-gray-500 text-center">Preview will appear here after conversion.</p>
             </div>
         </div>
     </div>
@@ -106,114 +101,131 @@
     <script>
         const dragZone = document.getElementById('drag-zone');
         const fileInput = document.getElementById('fileInput');
-        const threadsContainer = document.getElementById('threads-container');
         const messageBox = document.getElementById('message-box');
+        const actionArea = document.getElementById('action-area');
+        const previewArea = document.getElementById('preview-area');
+        const convertBtn = document.getElementById('convertBtn');
+        const downloadLink = document.getElementById('downloadLink');
+        const previewContent = document.getElementById('preview-content');
 
-        // Function to display messages
+        let fileToConvert = null;
+
         function showMessage(text, isError = false) {
             messageBox.textContent = text;
             messageBox.classList.remove('hidden', 'message-box', 'error', 'success');
             messageBox.classList.add('message-box', isError ? 'error' : 'success');
         }
 
-        // Handle file drop and input
-        ['dragover', 'dragleave', 'drop', 'click'].forEach(event => {
+        ['dragover', 'dragleave'].forEach(event => {
             dragZone.addEventListener(event, (e) => {
                 e.preventDefault();
-                if (event === 'dragover') {
-                    dragZone.classList.add('active');
-                } else if (event === 'dragleave') {
-                    dragZone.classList.remove('active');
-                } else if (event === 'drop') {
-                    dragZone.classList.remove('active');
-                    handleFiles(e.dataTransfer.files);
-                } else if (event === 'click') {
-                    fileInput.click();
-                }
+                dragZone.classList[event === 'dragover' ? 'add' : 'remove']('active');
             });
         });
 
-        fileInput.addEventListener('change', (e) => {
-            handleFiles(e.target.files);
+        dragZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dragZone.classList.remove('active');
+            handleFile(e.dataTransfer.files[0]);
         });
 
-        function handleFiles(files) {
-            if (files.length === 0) {
-                showMessage("No files selected. Ingestion canceled.", true);
+        dragZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+        function handleFile(file) {
+            if (!file) {
+                showMessage("No file selected.", true);
+                return;
+            }
+            fileToConvert = file;
+            showMessage(`File selected: ${file.name}`);
+            actionArea.classList.remove('hidden');
+            previewArea.classList.add('hidden');
+            downloadLink.classList.add('hidden');
+        }
+
+        convertBtn.addEventListener('click', () => {
+            if (!fileToConvert) {
+                showMessage("Please select a file first.", true);
                 return;
             }
 
-            const placeholder = threadsContainer.querySelector('p');
-            if (placeholder) {
-                placeholder.remove();
-            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const fileContent = e.target.result;
+                const fileName = fileToConvert.name.split('.')[0];
+                const pageTitle = `OES-Archive | ${fileName}`;
 
-            Array.from(files).forEach(file => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    let content = e.target.result;
-                    let displayContent = '';
-                    let isJSON = false;
-
-                    try {
-                        const parsed = JSON.parse(content);
-                        isJSON = true;
-                        displayContent = `<div class="json-viewer">${jsonToHtml(parsed)}</div>`;
-                    } catch (err) {
-                        displayContent = `<pre>${content}</pre>`;
-                    }
-
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    card.innerHTML = `
-                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 border-b border-gray-600 pb-2">
-                            <h3 class="text-lg font-semibold text-blue-400 break-all">${file.name}</h3>
-                            <span class="text-sm text-gray-500 mt-1 sm:mt-0">Size: ${(file.size / 1024).toFixed(2)} KB</span>
+                // Create the content for the new HTML page
+                const newHtmlContent = `
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>${pageTitle}</title>
+                        <script src="https://cdn.tailwindcss.com"></script>
+                        <style>
+                            body {
+                                font-family: 'Roboto Mono', monospace;
+                                background: #0d1117;
+                                color: #c9d1d9;
+                                min-height: 100vh;
+                                padding: 2rem;
+                            }
+                            .card {
+                                background-color: #161b22;
+                                border: 1px solid #30363d;
+                                border-radius: 8px;
+                                padding: 1.5rem;
+                                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+                            }
+                            pre {
+                                white-space: pre-wrap;
+                                word-wrap: break-word;
+                                font-size: 0.875rem;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container mx-auto max-w-4xl space-y-6">
+                            <header class="text-center mb-8">
+                                <h1 class="text-3xl sm:text-4xl font-bold text-gray-200">${pageTitle}</h1>
+                                <p class="mt-2 text-gray-400">Archived on: ${new Date().toLocaleString()}</p>
+                            </header>
+                            <div class="card">
+                                <h2 class="text-xl font-bold mb-4">Canonical Thread Content</h2>
+                                <pre class="p-4 bg-gray-800 rounded-md">${fileContent}</pre>
+                            </div>
+                            <footer class="text-center mt-8 text-sm text-gray-500">
+                                Generated by the OES Data Conversion Engine.
+                            </footer>
                         </div>
-                        <div class="thread-content">${displayContent}</div>
-                    `;
-                    threadsContainer.appendChild(card);
-                    showMessage(`File "${file.name}" ingested successfully.`);
-                };
-                reader.onerror = () => {
-                    showMessage(`Could not read file "${file.name}". Ingestion failed.`, true);
-                };
-                reader.readAsText(file);
-            });
-        }
-        
-        // Helper function to render JSON as collapsible HTML
-        function jsonToHtml(json) {
-            if (typeof json === 'object' && json !== null) {
-                const isArray = Array.isArray(json);
-                let html = `<div>${isArray ? '[' : '{'}</div>`;
-                html += `<div style="padding-left: 1rem;">`;
-                for (const key in json) {
-                    if (Object.prototype.hasOwnProperty.call(json, key)) {
-                        const value = json[key];
-                        html += `<div>`;
-                        if (!isArray) {
-                            html += `<span class="text-gray-400">"${key}":</span> `;
-                        }
-                        if (typeof value === 'object' && value !== null) {
-                            html += `<span class="json-toggle" onclick="this.nextElementSibling.classList.toggle('hidden')">
-                                [${typeof value === 'object' && Array.isArray(value) ? 'Array' : 'Object'}]
-                            </span><div class="hidden">`;
-                            html += jsonToHtml(value);
-                            html += `</div>`;
-                        } else {
-                            html += `<span class="text-emerald-400">${JSON.stringify(value)}</span>,`;
-                        }
-                        html += `</div>`;
-                    }
-                }
-                html += `</div>`;
-                html += `<div>${isArray ? ']' : '}'}</div>`;
-                return html;
-            } else {
-                return `<span class="text-emerald-400">${JSON.stringify(json)}</span>`;
-            }
-        }
+                    </body>
+                    </html>
+                `;
+
+                // Create a Blob and a download link
+                const blob = new Blob([newHtmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                downloadLink.href = url;
+                downloadLink.download = `${fileName}.html`;
+                
+                // Show the download link and preview
+                downloadLink.classList.remove('hidden');
+                previewArea.classList.remove('hidden');
+                previewContent.innerHTML = `<pre class="p-4">${fileContent}</pre>`;
+
+                showMessage("File converted successfully! Ready for download.");
+            };
+
+            reader.onerror = () => {
+                showMessage("Failed to read file.", true);
+            };
+
+            reader.readAsText(fileToConvert);
+        });
+
     </script>
 </body>
 </html>
