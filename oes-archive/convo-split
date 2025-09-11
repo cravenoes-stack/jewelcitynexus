@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatGPT Conversation Extractor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .upload-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .file-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .file-input:hover, .file-input.highlight {
+            border-color: #3b82f6;
+            background-color: #f8fafc;
+        }
+
+        .file-input input {
+            display: none;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #1e40af;
+            margin-bottom: 15px;
+        }
+
+        .uploaded-files {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-success:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .conversations-list {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .conversation-item {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: background-color 0.2s;
+        }
+
+        .conversation-item:hover {
+            background: #f9fafb;
+        }
+
+        .conversation-item.selected {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .conversation-info {
+            flex: 1;
+        }
+
+        .conversation-title {
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 5px;
+        }
+
+        .conversation-meta {
+            font-size: 0.85rem;
+            color: #6b7280;
+            display: flex;
+            gap: 15px;
+        }
+
+        .conversation-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 0.8rem;
+        }
+
+        .preview-section {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .preview-header {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+            background: white;
+        }
+
+        .stats {
+            text-align: center;
+            color: #6b7280;
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .no-conversations {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>ChatGPT Conversation Extractor</h1>
+            <p>Upload ChatGPT JSON or HTML exports to create individual HTML conversation files</p>
+        </div>
+
+        <div id="mainInterface">
+            <div class="upload-section">
+                <h2 class="section-title">📁 Upload Files</h2>
+                
+                <div class="file-input" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" multiple accept=".json,.html">
+                    <p><strong>Click to select files</strong> or drag and drop here</p>
+                    <p style="font-size: 0.9rem; margin-top: 5px; opacity: 0.7;">Supports .json and .html files</p>
+                </div>
+
+                <div class="info-box">
+                    <strong>Supported formats:</strong><br>
+                    • ChatGPT JSON export files (.json)<br>
+                    • HTML conversation files (.html)
+                </div>
+
+                <div id="uploadedFiles" class="uploaded-files hidden">
+                    <strong>Uploaded Files:</strong>
+                    <ul id="filesList"></ul>
+                </div>
+            </div>
+
+            <div id="loading" class="loading hidden">
+                <div class="spinner"></div>
+                <p><strong>Processing conversations...</strong></p>
+            </div>
+
+            <div id="controls" class="controls hidden">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search conversations...">
+                <button class="btn btn-primary" onclick="selectAll()">Select All (<span id="totalCount">0</span>)</button>
+                <button class="btn btn-secondary" onclick="clearSelection()">Clear</button>
+                <button class="btn btn-success" id="downloadBtn" onclick="downloadSelected()" disabled>
+                    Download (<span id="selectedCount">0</span>)
+                </button>
+            </div>
+
+            <div id="conversationsList" class="conversations-list hidden"></div>
+
+            <div id="stats" class="stats hidden">
+                Showing <span id="filteredCount">0</span> of <span id="totalConversations">0</span> conversations
+            </div>
+
+            <div id="noConversations" class="no-conversations hidden">
+                <h3>No conversations found</h3>
+                <p>The uploaded files don't appear to contain ChatGPT conversations in the expected format. Please make sure you're uploading the JSON export file from ChatGPT.</p>
+            </div>
+        </div>
+
+        <div id="previewSection" class="preview-section hidden">
+            <div class="preview-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="btn btn-secondary" onclick="closePreview()">← Back</button>
+                    <h2 id="previewTitle">Preview</h2>
+                </div>
+                <button class="btn btn-success" onclick="downloadPreviewConversation()">
+                    📥 Download HTML
+                </button>
+            </div>
+            <iframe id="previewIframe" class="preview-iframe"></iframe>
+        </div>
+    </div>
+
+    <script>
+        let conversations = [];
+        let selectedConversations = new Set();
+        let previewConversation = null;
+
+        // File upload handling
+        document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+
+        // --- START: Drag and Drop Functionality (ADDED) ---
+        const dropZone = document.querySelector('.file-input');
+
+        // Prevent default browser behavior for drag-and-drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false); // Prevent browser opening file if dropped outside zone
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Highlight drop zone when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('highlight'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('highlight'), false);
+        });
+
+        // Handle dropped files
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            // Pass the dropped files to the existing upload handler by creating a mock event
+            handleFileUpload({ target: { files: files } });
+        }, false);
+        // --- END: Drag and Drop Functionality ---
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function() {
+            filterConversations();
+        });
+
+        function formatMessageForHTML(message) {
+            const role = message.author?.role || message.role || 'unknown';
+            let content = '';
+            
+            // Handle different content formats from ChatGPT exports
+            if (message.content?.parts) {
+                content = message.content.parts.join('\n');
+            } else if (typeof message.content === 'string') {
+                content = message.content;
+            } else if (message.content?.text) {
+                content = message.content.text;
+            } else if (message.text) {
+                content = message.text;
+            } else {
+                content = JSON.stringify(message.content || '');
+            }
+            
+            const timestamp = message.create_time || message.timestamp || '';
+            const roleClass = role === 'user' ? 'user-message' : role === 'assistant' ? 'assistant-message' : 'system-message';
+            
+            return `
+            <div class="message ${roleClass}">
+              <div class="message-header">
+                <span class="role">${role.charAt(0).toUpperCase() + role.slice(1)}</span>
+                ${timestamp ? `<span class="timestamp">${new Date(timestamp * 1000 || timestamp).toLocaleString()}</span>` : ''}
+              </div>
+              <div class="message-content">${content.replace(/\n/g, '<br>').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+            </div>`;
+        }
+
+        function createConversationHTML(conversation) {
+            let messages = [];
+            
+            // Handle ChatGPT export format with mapping
+            if (conversation.mapping && typeof conversation.mapping === 'object') {
+                const nodes = Object.values(conversation.mapping);
+                messages = nodes
+                    .filter(node => node.message && node.message.content && node.message.author?.role !== 'system')
+                    .map(node => node.message)
+                    .sort((a, b) => (a.create_time || 0) - (b.create_time || 0));
+            } 
+            // Handle direct messages array
+            else if (conversation.messages && Array.isArray(conversation.messages)) {
+                messages = conversation.messages.filter(msg => msg.role !== 'system');
+            }
+            // Handle single conversation object
+            else if (conversation.content || conversation.text) {
+                messages = [conversation];
+            }
+
+            const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${conversation.title || 'Conversation'}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .conversation-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .conversation-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .conversation-title {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        .conversation-meta {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+        .messages {
+            padding: 20px;
+        }
+        .message {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ddd;
+        }
+        .user-message {
+            background-color: #f8fafc;
+            border-left-color: #3b82f6;
+        }
+        .assistant-message {
+            background-color: #f0fdf4;
+            border-left-color: #10b981;
+        }
+        .system-message {
+            background-color: #fef3c7;
+            border-left-color: #f59e0b;
+        }
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.85em;
+        }
+        .role {
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+        .timestamp {
+            color: #6b7280;
+        }
+        .message-content {
+            color: #374151;
+            white-space: pre-wrap;
+        }
+        .no-messages {
+            text-align: center;
+            color: #6b7280;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="conversation-container">
+        <div class="conversation-header">
+            <h1 class="conversation-title">${(conversation.title || 'Untitled Conversation').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</h1>
+            <div class="conversation-meta">
+                ${conversation.create_time ? `Created: ${new Date(conversation.create_time * 1000).toLocaleString()}` : ''}
+                ${messages.length ? ` • ${messages.length} messages` : ''}
+            </div>
+        </div>
+        <div class="messages">
+            ${messages.length > 0 ? 
+              messages.map(formatMessageForHTML).join('') : 
+              '<div class="no-messages">No messages found in this conversation.</div>'
+            }
+        </div>
+    </div>
+</body>
+</html>`;
+
+            return htmlContent;
+        }
+
+        function parseJSONExport(jsonContent) {
+            try {
+                const data = JSON.parse(jsonContent);
+                const conversations = [];
+                
+                console.log('Parsing JSON data:', data);
+                
+                // Handle ChatGPT export format - array of conversations
+                if (Array.isArray(data)) {
+                    data.forEach((conv, index) => {
+                        if (conv && (conv.title || conv.mapping || conv.messages)) {
+                            const htmlContent = createConversationHTML(conv);
+                            const messageCount = conv.mapping ? 
+                                Object.values(conv.mapping).filter(node => node.message && node.message.content).length :
+                                (conv.messages?.length || 0);
+                            
+                            conversations.push({
+                                id: conv.id || `conv_${Date.now()}_${index}`,
+                                title: conv.title || `Conversation ${index + 1}`,
+                                htmlContent: htmlContent,
+                                timestamp: conv.create_time ? new Date(conv.create_time * 1000).toISOString() : new Date().toISOString(),
+                                messageCount: messageCount,
+                                originalData: conv
+                            });
+                        }
+                    });
+                } 
+                // Handle wrapped format with conversations array
+                else if (data.conversations && Array.isArray(data.conversations)) {
+                    data.conversations.forEach((conv, index) => {
+                        const htmlContent = createConversationHTML(conv);
+                        const messageCount = conv.mapping ? 
+                            Object.values(conv.mapping).filter(node => node.message && node.message.content).length :
+                            (conv.messages?.length || 0);
+                        
+                        conversations.push({
+                            id: conv.id || `conv_${Date.now()}_${index}`,
+                            title: conv.title || `Conversation ${index + 1}`,
+                            htmlContent: htmlContent,
+                            timestamp: conv.create_time ? new Date(conv.create_time * 1000).toISOString() : new Date().toISOString(),
+                            messageCount: messageCount,
+                            originalData: conv
+                        });
+                    });
+                }
+                // Handle single conversation object
+                else if (data.title || data.mapping || data.messages) {
+                    const htmlContent = createConversationHTML(data);
+                    const messageCount = data.mapping ? 
+                        Object.values(data.mapping).filter(node => node.message && node.message.content).length :
+                        (data.messages?.length || 0);
+                    
+                    conversations.push({
+                        id: data.id || `conv_${Date.now()}`,
+                        title: data.title || 'Conversation',
+                        htmlContent: htmlContent,
+                        timestamp: data.create_time ? new Date(data.create_time * 1000).toISOString() : new Date().toISOString(),
+                        messageCount: messageCount,
+                        originalData: data
+                    });
+                }
+                
+                console.log('Extracted conversations:', conversations);
+                return conversations;
+            } catch (error) {
+                console.error('JSON parsing error:', error);
+                alert('Error parsing JSON: ' + error.message);
+                return [];
+            }
+        }
+
+        function parseHTMLContent(htmlContent) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, 'text/html');
+            const conversations = [];
+            
+            // Extract title
+            const title = doc.querySelector('title')?.textContent || 
+                          doc.querySelector('h1, h2, h3')?.textContent ||
+                          'HTML Document';
+            
+            // Count potential messages (rough estimate)
+            const messageIndicators = htmlContent.match(/user:|assistant:|human:|chatgpt:|<div[^>]*class[^>]*message/gi) || [];
+            
+            conversations.push({
+                id: `html_${Date.now()}`,
+                title: title.substring(0, 100),
+                htmlContent: htmlContent,
+                timestamp: new Date().toISOString(),
+                messageCount: messageIndicators.length,
+                originalData: { htmlContent }
+            });
+            
+            return conversations;
+        }
+
+        async function handleFileUpload(event) {
+            const files = Array.from(event.target.files);
+            if (files.length === 0) return;
+            
+            showLoading(true);
+            
+            try {
+                const allConversations = [];
+                
+                for (const file of files) {
+                    console.log('Processing file:', file.name);
+                    const content = await file.text();
+                    let extractedConversations = [];
+                    
+                    if (file.name.toLowerCase().endsWith('.json')) {
+                        extractedConversations = parseJSONExport(content);
+                    } else if (file.name.toLowerCase().endsWith('.html')) {
+                        extractedConversations = parseHTMLContent(content);
+                    }
+                    
+                    // Add source file info
+                    extractedConversations.forEach(conv => {
+                        conv.sourceFile = file.name;
+                    });
+                    
+                    console.log(`Extracted ${extractedConversations.length} conversations from ${file.name}`);
+                    allConversations.push(...extractedConversations);
+                }
+                
+                conversations.push(...allConversations);
+                updateFilesList(files);
+                
+                if (allConversations.length === 0) {
+                    showNoConversations(true);
+                } else {
+                    showConversations();
+                }
+                
+            } catch (error) {
+                console.error('Processing error:', error);
+                alert('Error processing files: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('hidden', !show);
+        }
+
+        function showNoConversations(show) {
+            document.getElementById('noConversations').classList.toggle('hidden', !show);
+        }
+
+        function showConversations() {
+            document.getElementById('controls').classList.remove('hidden');
+            document.getElementById('conversationsList').classList.remove('hidden');
+            document.getElementById('stats').classList.remove('hidden');
+            document.getElementById('noConversations').classList.add('hidden');
+            renderConversations();
+        }
+
+        function updateFilesList(files) {
+            const uploadedFiles = document.getElementById('uploadedFiles');
+            const filesList = document.getElementById('filesList');
+            
+            uploadedFiles.classList.remove('hidden');
+            
+            files.forEach(file => {
+                const li = document.createElement('li');
+                li.textContent = file.name;
+                li.style.marginBottom = '5px';
+                filesList.appendChild(li);
+            });
+        }
+
+        function renderConversations() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredConvs = conversations.filter(conv => 
+                !searchTerm || conv.title.toLowerCase().includes(searchTerm)
+            );
+            
+            const container = document.getElementById('conversationsList');
+            container.innerHTML = '';
+            
+            filteredConvs.forEach(conv => {
+                const item = document.createElement('div');
+                item.className = `conversation-item ${selectedConversations.has(conv.id) ? 'selected' : ''}`;
+                
+                item.innerHTML = `
+                    <input type="checkbox" class="checkbox" ${selectedConversations.has(conv.id) ? 'checked' : ''} 
+                           onchange="toggleSelection('${conv.id}')">
+                    <div class="conversation-info">
+                        <div class="conversation-title">${conv.title}</div>
+                        <div class="conversation-meta">
+                            <span>Source: ${conv.sourceFile}</span>
+                            <span>Messages: ${conv.messageCount}</span>
+                            <span>Date: ${new Date(conv.timestamp).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                    <div class="conversation-actions">
+                        <button class="btn btn-primary btn-small" onclick="previewConversation('${conv.id}')">
+                            👁 Preview
+                        </button>
+                        <button class="btn btn-success btn-small" onclick="downloadConversation('${conv.id}')">
+                            📥 HTML
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(item);
+            });
+            
+            updateStats(filteredConvs.length);
+        }
+
+        function updateStats(filteredCount) {
+            document.getElementById('totalCount').textContent = conversations.length;
+            document.getElementById('totalConversations').textContent = conversations.length;
+            document.getElementById('filteredCount').textContent = filteredCount;
+            document.getElementById('selectedCount').textContent = selectedConversations.size;
+            
+            const downloadBtn = document.getElementById('downloadBtn');
+            downloadBtn.disabled = selectedConversations.size === 0;
+        }
+
+        function filterConversations() {
+            renderConversations();
+        }
+
+        function toggleSelection(convId) {
+            if (selectedConversations.has(convId)) {
+                selectedConversations.delete(convId);
+            } else {
+                selectedConversations.add(convId);
+            }
+            renderConversations();
+        }
+
+        function selectAll() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredConvs = conversations.filter(conv => 
+                !searchTerm || conv.title.toLowerCase().includes(searchTerm)
+            );
+            
+            filteredConvs.forEach(conv => selectedConversations.add(conv.id));
+            renderConversations();
+        }
+
+        function clearSelection() {
+            selectedConversations.clear();
+            renderConversations();
+        }
+
+        function downloadConversation(convId) {
+            const conv = conversations.find(c => c.id === convId);
+            if (!conv) return;
+            
+            try {
+                const element = document.createElement('a');
+                const file = new Blob([conv.htmlContent], { type: 'text/html;charset=utf-8' });
+                element.href = URL.createObjectURL(file);
+                element.download = `${conv.title.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_').substring(0, 50)}.html`;
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
+                URL.revokeObjectURL(element.href);
+            } catch (error) {
+                console.error('Download error:', error);
+                alert('Download failed. Please try again.');
+            }
+        }
+
+        function downloadSelected() {
+            if (selectedConversations.size === 0) return;
+            
+            const selectedConvs = conversations.filter(conv => selectedConversations.has(conv.id));
+            selectedConvs.forEach(conv => downloadConversation(conv.id));
+        }
+
+        function previewConversation(convId) {
+            const conv = conversations.find(c => c.id === convId);
+            if (!conv) return;
+            
+            previewConversation = conv;
+            document.getElementById('previewTitle').textContent = `Preview: ${conv.title}`;
+            document.getElementById('previewIframe').srcdoc = conv.htmlContent;
+            
+            document.getElementById('mainInterface').classList.add('hidden');
+            document.getElementById('previewSection').classList.remove('hidden');
+        }
+
+        function closePreview() {
+            document.getElementById('mainInterface').classList.remove('hidden');
+            document.getElementById('previewSection').classList.add('hidden');
+            previewConversation = null;
+        }
+
+        function downloadPreviewConversation() {
+            if (previewConversation) {
+                downloadConversation(previewConversation.id);
+            }
+        }
+    </script>
+</body>
+</html>
