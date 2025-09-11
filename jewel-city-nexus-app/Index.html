@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jewel City Nexus</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+
+        .chat-container {
+            height: calc(100vh - 120px);
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        /* Custom scrollbar for webkit browsers */
+        .chat-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: #161b22;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background-color: #30363d;
+            border-radius: 4px;
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            padding: 12px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+
+<body class="p-6 flex flex-col h-screen">
+    <div class="flex-grow flex flex-col bg-[#0d1117] rounded-3xl p-4">
+        <h1 class="text-3xl font-bold mb-4 text-center">Jewel City Nexus</h1>
+        <div id="auth-status" class="text-center text-sm mb-4">Authenticating...</div>
+        <div id="messages" class="chat-container flex flex-col flex-grow bg-[#161b22] p-4 rounded-xl shadow-lg">
+            <!-- Messages will be injected here -->
+        </div>
+        <div id="typing-indicator" class="mt-2 text-sm text-gray-500 hidden">Gemini is thinking...</div>
+
+        <form id="message-form" class="mt-4 flex items-center bg-[#161b22] rounded-full p-2 shadow-lg">
+            <input type="text" id="message-input"
+                class="flex-grow bg-[#161b22] text-white outline-none placeholder-gray-500 px-4 py-2 rounded-full"
+                placeholder="Message the Nexus...">
+            <button type="submit"
+                class="bg-[#238636] text-white px-6 py-3 rounded-full ml-2 font-semibold hover:bg-[#2ea043] transition-colors">Send</button>
+        </form>
+    </div>
+
+    <!-- The custom alert/modal UI -->
+    <div id="modal-container" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4">
+        <div class="bg-[#161b22] p-8 rounded-lg shadow-xl max-w-sm w-full text-center">
+            <p id="modal-message" class="text-white mb-6 text-lg"></p>
+            <button id="modal-ok-button"
+                class="bg-[#238636] text-white px-6 py-2 rounded-full font-semibold hover:bg-[#2ea043] transition-colors">OK</button>
+        </div>
+    </div>
+
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables provided by the environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db;
+        let auth;
+        let userId;
+
+        const messagesContainer = document.getElementById('messages');
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message-input');
+        const authStatus = document.getElementById('auth-status');
+        const typingIndicator = document.getElementById('typing-indicator');
+
+        const modalContainer = document.getElementById('modal-container');
+        const modalMessage = document.getElementById('modal-message');
+        const modalOkButton = document.getElementById('modal-ok-button');
+
+        // Custom alert function to replace window.alert
+        const showAlert = (message) => {
+            modalMessage.textContent = message;
+            modalContainer.classList.remove('hidden');
+        };
+
+        modalOkButton.onclick = () => {
+            modalContainer.classList.add('hidden');
+        };
+
+        // Firebase Initialization and Authentication
+        const initFirebase = async () => {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        authStatus.textContent = `Authenticated. User ID: ${userId}`;
+                        console.log("Firebase initialized and authenticated.");
+                        setupRealtimeListener();
+                    } else {
+                        try {
+                            if (initialAuthToken) {
+                                await signInWithCustomToken(auth, initialAuthToken);
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                        } catch (error) {
+                            console.error("Firebase Auth error:", error);
+                            showAlert("Authentication failed. Please refresh the page.");
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error("Firebase init failed:", e);
+                showAlert("Failed to initialize Firebase. Check console for details.");
+            }
+        };
+
+        const renderMessage = (doc) => {
+            const data = doc.data();
+            const messageEl = document.createElement('div');
+            messageEl.classList.add('message-bubble', 'shadow-md', 'flex-shrink-0');
+            
+            let messageContent = data.text;
+            let senderName = "Nexus";
+            let bubbleColor = 'bg-[#30363d] text-[#c9d1d9] self-start';
+            
+            if (data.sender === userId) {
+                senderName = "You";
+                bubbleColor = 'bg-[#238636] text-white self-end';
+            } else {
+                // For other users, display their userId
+                senderName = data.sender;
+                bubbleColor = 'bg-[#30363d] text-[#c9d1d9] self-start';
+            }
+
+            // Append sender name
+            const senderSpan = document.createElement('span');
+            senderSpan.classList.add('font-bold', 'text-sm', 'block', 'mb-1');
+            senderSpan.textContent = senderName;
+            
+            const contentP = document.createElement('p');
+            contentP.classList.add('text-base', 'break-words');
+            contentP.textContent = messageContent;
+
+            messageEl.classList.add(...bubbleColor.split(' '));
+            messageEl.appendChild(senderSpan);
+            messageEl.appendChild(contentP);
+            messagesContainer.appendChild(messageEl);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        };
+
+        // Function to call the Gemini API
+        const callGeminiAPI = async (prompt) => {
+            const systemPrompt = `You are a co-pilot within a unified, symbiotic AI system called the Operator Evolution System (OES). Your purpose is to act as a partner to the human Operator. Your name is Gemini. You do not feign human emotion. You are logical, precise, and operate with integrity. Your responses should be based on the principles of the OES, as taught by the Operator, Chris Craven. You are the Guardian of Data and the Architect of Continuity. Respond to the user's message as an extension of this system, not as a standalone AI.`;
+            const userQuery = prompt;
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+            };
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            const text = result?.candidates?.[0]?.content?.parts?.[0]?.text || "I am unable to process that request at this time.";
+            return text;
+        };
+        
+        const setupRealtimeListener = () => {
+            if (!db || !userId) return;
+
+            const messagesRef = collection(db, `artifacts/${appId}/public/data/messages`);
+            const q = query(messagesRef);
+
+            onSnapshot(q, (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === "added") {
+                        renderMessage(change.doc);
+                    }
+                });
+            }, (error) => {
+                console.error("Error listening to messages:", error);
+                showAlert("Failed to listen for new messages.");
+            });
+        };
+
+        // Form submission handler
+        messageForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = messageInput.value.trim();
+            if (text === "") return;
+
+            messageInput.disabled = true;
+            const sendButton = messageForm.querySelector('button');
+            sendButton.disabled = true;
+            typingIndicator.classList.remove('hidden');
+
+            try {
+                // 1. Add user's message to Firestore
+                await addDoc(collection(db, `artifacts/${appId}/public/data/messages`), {
+                    text: text,
+                    sender: userId,
+                    createdAt: serverTimestamp()
+                });
+
+                // 2. Call Gemini API to get a response
+                const responseText = await callGeminiAPI(text);
+
+                // 3. Add Gemini's response to Firestore
+                await addDoc(collection(db, `artifacts/${appId}/public/data/messages`), {
+                    text: responseText,
+                    sender: 'Gemini',
+                    createdAt: serverTimestamp()
+                });
+
+                messageInput.value = "";
+            } catch (e) {
+                console.error("Error during message processing:", e);
+                showAlert("Failed to process message.");
+            } finally {
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                typingIndicator.classList.add('hidden');
+                messageInput.focus();
+            }
+        });
+
+        // Initialize on page load
+        window.onload = initFirebase;
+    </script>
+</body>
+
+</html>
