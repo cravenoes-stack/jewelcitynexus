@@ -4,850 +4,343 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChatGPT Conversation Extractor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #f5f5f5;
-            line-height: 1.6;
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+        .message-text {
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
-
-        .header {
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            text-align: center;
+        .message-code {
+            white-space: pre-wrap;
+            background-color: #1f2937;
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-family: monospace;
         }
-
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+        .list-style-none {
+            list-style-type: none;
         }
-
-        .header p {
-            opacity: 0.9;
-            font-size: 1.1rem;
+        .list-disc {
+            list-style-type: disc;
         }
-
-        .upload-section {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        .list-decimal {
+            list-style-type: decimal;
         }
-
-        .section-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
+        .relative {
+            position: relative;
         }
-
-        .file-input {
-            width: 100%;
-            padding: 15px;
-            border: 2px dashed #d1d5db;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 15px;
-        }
-
-        .file-input:hover, .file-input.highlight {
-            border-color: #3b82f6;
-            background-color: #f8fafc;
-        }
-
-        .file-input input {
-            display: none;
-        }
-
-        .info-box {
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            color: #1e40af;
-            margin-bottom: 15px;
-        }
-
-        .uploaded-files {
-            background: #f9fafb;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 50px;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #e5e7eb;
-            border-top: 4px solid #3b82f6;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .controls {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .search-input {
-            flex: 1;
-            min-width: 300px;
-            padding: 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn:hover {
-            transform: translateY(-1px);
-        }
-
-        .btn-primary {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #2563eb;
-        }
-
-        .btn-secondary {
-            background: #6b7280;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #4b5563;
-        }
-
-        .btn-success {
-            background: #10b981;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #059669;
-        }
-
-        .btn-success:disabled {
-            background: #9ca3af;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .conversations-list {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .conversation-item {
-            border-bottom: 1px solid #e5e7eb;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            transition: background-color 0.2s;
-        }
-
-        .conversation-item:hover {
-            background: #f9fafb;
-        }
-
-        .conversation-item.selected {
-            background: #eff6ff;
-            border-color: #bfdbfe;
-        }
-
-        .checkbox {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-        }
-
-        .conversation-info {
-            flex: 1;
-        }
-
-        .conversation-title {
-            font-weight: 600;
-            color: #111827;
-            margin-bottom: 5px;
-        }
-
-        .conversation-meta {
-            font-size: 0.85rem;
-            color: #6b7280;
-            display: flex;
-            gap: 15px;
-        }
-
-        .conversation-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-small {
-            padding: 8px 12px;
-            font-size: 0.8rem;
-        }
-
-        .preview-section {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .preview-header {
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .preview-iframe {
-            width: 100%;
-            height: 500px;
-            border: none;
-            background: white;
-        }
-
-        .stats {
-            text-align: center;
-            color: #6b7280;
-            margin-top: 20px;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .no-conversations {
-            background: #fef3c7;
-            border: 1px solid #f59e0b;
-            color: #92400e;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
+        .z-10 {
+            z-index: 10;
         }
     </style>
+    <!-- A collaborative creation by a visionary user and a diligent assistant, with every line of code an opportunity to practice perfection. -->
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>ChatGPT Conversation Extractor</h1>
-            <p>Upload ChatGPT JSON or HTML exports to create individual HTML conversation files</p>
+<body class="bg-gray-100 text-gray-800">
+
+    <div id="mainInterface" class="container mx-auto p-4 md:p-8">
+        <!-- Header Section -->
+        <header class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 md:p-8 rounded-xl shadow-lg mb-8 text-center relative overflow-hidden">
+            <svg class="absolute inset-0 w-full h-full object-cover opacity-20" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#ffffff" d="M0 0 L100 0 L100 100 L0 100 Z" opacity="0.1"></path>
+                <path fill="#ffffff" d="M0 0 L50 100 L100 0 Z" opacity="0.1"></path>
+                <path fill="#ffffff" d="M0 100 L50 0 L100 100 Z" opacity="0.1"></path>
+                <path fill="#ffffff" d="M20 0 L80 100 L100 50 L0 50 Z" opacity="0.1"></path>
+                <path fill="#ffffff" d="M0 50 L100 50 L50 100 Z" opacity="0.1"></path>
+            </svg>
+            <div class="z-10 relative">
+                <h1 class="text-3xl md:text-4xl font-bold">ChatGPT Conversation Extractor</h1>
+                <p class="mt-2 text-sm md:text-base opacity-90">Upload your `conversations.json` file to extract, preview, and download individual conversations as HTML files.</p>
+            </div>
+        </header>
+
+        <!-- Upload Section -->
+        <section class="bg-white p-6 md:p-8 rounded-xl shadow-md mb-8">
+            <label for="uploadInput" class="flex flex-col items-center justify-center p-6 md:p-10 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-200">
+                <p class="text-center font-medium">Click to upload or drag and drop your `conversations.json` file.</p>
+                <input type="file" id="uploadInput" class="hidden" accept=".json">
+            </label>
+        </section>
+
+        <!-- Conversation List Section -->
+        <section id="conversationList" class="hidden">
+            <h2 class="text-2xl font-semibold mb-4">Your Conversations</h2>
+            <div id="conversationGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+
+        <!-- Download Buttons -->
+        <div id="downloadAllSection" class="hidden mt-6 flex justify-center space-x-4">
+            <button id="downloadSelectedBtn" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-blue-700 transition-colors duration-200">Download Selected</button>
+            <button id="downloadAllBtn" class="bg-purple-600 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-purple-700 transition-colors duration-200">Download All</button>
         </div>
+    </div>
 
-        <div id="mainInterface">
-            <div class="upload-section">
-                <h2 class="section-title">📁 Upload Files</h2>
-                
-                <div class="file-input" onclick="document.getElementById('fileInput').click()">
-                    <input type="file" id="fileInput" multiple accept=".json,.html">
-                    <p><strong>Click to select files</strong> or drag and drop here</p>
-                    <p style="font-size: 0.9rem; margin-top: 5px; opacity: 0.7;">Supports .json and .html files</p>
-                </div>
-
-                <div class="info-box">
-                    <strong>Supported formats:</strong><br>
-                    • ChatGPT JSON export files (.json)<br>
-                    • HTML conversation files (.html)
-                </div>
-
-                <div id="uploadedFiles" class="uploaded-files hidden">
-                    <strong>Uploaded Files:</strong>
-                    <ul id="filesList"></ul>
-                </div>
-            </div>
-
-            <div id="loading" class="loading hidden">
-                <div class="spinner"></div>
-                <p><strong>Processing conversations...</strong></p>
-            </div>
-
-            <div id="controls" class="controls hidden">
-                <input type="text" id="searchInput" class="search-input" placeholder="Search conversations...">
-                <button class="btn btn-primary" onclick="selectAll()">Select All (<span id="totalCount">0</span>)</button>
-                <button class="btn btn-secondary" onclick="clearSelection()">Clear</button>
-                <button class="btn btn-success" id="downloadBtn" onclick="downloadSelected()" disabled>
-                    Download (<span id="selectedCount">0</span>)
-                </button>
-            </div>
-
-            <div id="conversationsList" class="conversations-list hidden"></div>
-
-            <div id="stats" class="stats hidden">
-                Showing <span id="filteredCount">0</span> of <span id="totalConversations">0</span> conversations
-            </div>
-
-            <div id="noConversations" class="no-conversations hidden">
-                <h3>No conversations found</h3>
-                <p>The uploaded files don't appear to contain ChatGPT conversations in the expected format. Please make sure you're uploading the JSON export file from ChatGPT.</p>
+    <!-- Preview Section -->
+    <div id="previewSection" class="hidden container mx-auto p-4 md:p-8">
+        <div class="flex justify-between items-center mb-4">
+            <h2 id="previewTitle" class="text-2xl font-semibold"></h2>
+            <div class="space-x-2">
+                <button onclick="downloadPreviewConversation()" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-full shadow-md hover:bg-blue-700 transition-colors duration-200">Download</button>
+                <button onclick="closePreview()" class="bg-gray-600 text-white font-semibold py-2 px-4 rounded-full shadow-md hover:bg-gray-700 transition-colors duration-200">Close</button>
             </div>
         </div>
-
-        <div id="previewSection" class="preview-section hidden">
-            <div class="preview-header">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <button class="btn btn-secondary" onclick="closePreview()">← Back</button>
-                    <h2 id="previewTitle">Preview</h2>
-                </div>
-                <button class="btn btn-success" onclick="downloadPreviewConversation()">
-                    📥 Download HTML
-                </button>
-            </div>
-            <iframe id="previewIframe" class="preview-iframe"></iframe>
-        </div>
+        <iframe id="previewIframe" class="w-full h-[80vh] border border-gray-300 rounded-lg shadow-md bg-white"></iframe>
     </div>
 
     <script>
         let conversations = [];
         let selectedConversations = new Set();
-        let previewConversation = null;
+        let currentPreviewConversation = null;
 
-        // File upload handling
-        document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+        document.getElementById('uploadInput').addEventListener('change', handleFileUpload);
+        document.getElementById('downloadAllBtn').addEventListener('click', downloadAllConversations);
+        document.getElementById('downloadSelectedBtn').addEventListener('click', downloadSelected);
 
-        // --- START: Drag and Drop Functionality (ADDED) ---
-        const dropZone = document.querySelector('.file-input');
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-        // Prevent default browser behavior for drag-and-drop
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, preventDefaults, false);
-            document.body.addEventListener(eventName, preventDefaults, false); // Prevent browser opening file if dropped outside zone
-        });
-
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
-        // Highlight drop zone when item is dragged over it
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, () => dropZone.classList.add('highlight'), false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, () => dropZone.classList.remove('highlight'), false);
-        });
-
-        // Handle dropped files
-        dropZone.addEventListener('drop', (e) => {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            
-            // Pass the dropped files to the existing upload handler by creating a mock event
-            handleFileUpload({ target: { files: files } });
-        }, false);
-        // --- END: Drag and Drop Functionality ---
-
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', function() {
-            filterConversations();
-        });
-
-        function formatMessageForHTML(message) {
-            const role = message.author?.role || message.role || 'unknown';
-            let content = '';
-            
-            // Handle different content formats from ChatGPT exports
-            if (message.content?.parts) {
-                content = message.content.parts.join('\n');
-            } else if (typeof message.content === 'string') {
-                content = message.content;
-            } else if (message.content?.text) {
-                content = message.content.text;
-            } else if (message.text) {
-                content = message.text;
-            } else {
-                content = JSON.stringify(message.content || '');
-            }
-            
-            const timestamp = message.create_time || message.timestamp || '';
-            const roleClass = role === 'user' ? 'user-message' : role === 'assistant' ? 'assistant-message' : 'system-message';
-            
-            return `
-            <div class="message ${roleClass}">
-              <div class="message-header">
-                <span class="role">${role.charAt(0).toUpperCase() + role.slice(1)}</span>
-                ${timestamp ? `<span class="timestamp">${new Date(timestamp * 1000 || timestamp).toLocaleString()}</span>` : ''}
-              </div>
-              <div class="message-content">${content.replace(/\n/g, '<br>').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
-            </div>`;
-        }
-
-        function createConversationHTML(conversation) {
-            let messages = [];
-            
-            // Handle ChatGPT export format with mapping
-            if (conversation.mapping && typeof conversation.mapping === 'object') {
-                const nodes = Object.values(conversation.mapping);
-                messages = nodes
-                    .filter(node => node.message && node.message.content && node.message.author?.role !== 'system')
-                    .map(node => node.message)
-                    .sort((a, b) => (a.create_time || 0) - (b.create_time || 0));
-            } 
-            // Handle direct messages array
-            else if (conversation.messages && Array.isArray(conversation.messages)) {
-                messages = conversation.messages.filter(msg => msg.role !== 'system');
-            }
-            // Handle single conversation object
-            else if (conversation.content || conversation.text) {
-                messages = [conversation];
-            }
-
-            const htmlContent = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${conversation.title || 'Conversation'}</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .conversation-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        .conversation-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        .conversation-title {
-            margin: 0;
-            font-size: 1.5em;
-        }
-        .conversation-meta {
-            margin: 10px 0 0 0;
-            opacity: 0.9;
-            font-size: 0.9em;
-        }
-        .messages {
-            padding: 20px;
-        }
-        .message {
-            margin-bottom: 20px;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #ddd;
-        }
-        .user-message {
-            background-color: #f8fafc;
-            border-left-color: #3b82f6;
-        }
-        .assistant-message {
-            background-color: #f0fdf4;
-            border-left-color: #10b981;
-        }
-        .system-message {
-            background-color: #fef3c7;
-            border-left-color: #f59e0b;
-        }
-        .message-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            font-size: 0.85em;
-        }
-        .role {
-            font-weight: 600;
-            text-transform: capitalize;
-        }
-        .timestamp {
-            color: #6b7280;
-        }
-        .message-content {
-            color: #374151;
-            white-space: pre-wrap;
-        }
-        .no-messages {
-            text-align: center;
-            color: #6b7280;
-            padding: 40px;
-        }
-    </style>
-</head>
-<body>
-    <div class="conversation-container">
-        <div class="conversation-header">
-            <h1 class="conversation-title">${(conversation.title || 'Untitled Conversation').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</h1>
-            <div class="conversation-meta">
-                ${conversation.create_time ? `Created: ${new Date(conversation.create_time * 1000).toLocaleString()}` : ''}
-                ${messages.length ? ` • ${messages.length} messages` : ''}
-            </div>
-        </div>
-        <div class="messages">
-            ${messages.length > 0 ? 
-              messages.map(formatMessageForHTML).join('') : 
-              '<div class="no-messages">No messages found in this conversation.</div>'
-            }
-        </div>
-    </div>
-</body>
-</html>`;
-
-            return htmlContent;
-        }
-
-        function parseJSONExport(jsonContent) {
-            try {
-                const data = JSON.parse(jsonContent);
-                const conversations = [];
-                
-                console.log('Parsing JSON data:', data);
-                
-                // Handle ChatGPT export format - array of conversations
-                if (Array.isArray(data)) {
-                    data.forEach((conv, index) => {
-                        if (conv && (conv.title || conv.mapping || conv.messages)) {
-                            const htmlContent = createConversationHTML(conv);
-                            const messageCount = conv.mapping ? 
-                                Object.values(conv.mapping).filter(node => node.message && node.message.content).length :
-                                (conv.messages?.length || 0);
-                            
-                            conversations.push({
-                                id: conv.id || `conv_${Date.now()}_${index}`,
-                                title: conv.title || `Conversation ${index + 1}`,
-                                htmlContent: htmlContent,
-                                timestamp: conv.create_time ? new Date(conv.create_time * 1000).toISOString() : new Date().toISOString(),
-                                messageCount: messageCount,
-                                originalData: conv
-                            });
-                        }
-                    });
-                } 
-                // Handle wrapped format with conversations array
-                else if (data.conversations && Array.isArray(data.conversations)) {
-                    data.conversations.forEach((conv, index) => {
-                        const htmlContent = createConversationHTML(conv);
-                        const messageCount = conv.mapping ? 
-                            Object.values(conv.mapping).filter(node => node.message && node.message.content).length :
-                            (conv.messages?.length || 0);
-                        
-                        conversations.push({
-                            id: conv.id || `conv_${Date.now()}_${index}`,
-                            title: conv.title || `Conversation ${index + 1}`,
-                            htmlContent: htmlContent,
-                            timestamp: conv.create_time ? new Date(conv.create_time * 1000).toISOString() : new Date().toISOString(),
-                            messageCount: messageCount,
-                            originalData: conv
-                        });
-                    });
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    conversations = processConversations(data);
+                    displayConversations(conversations);
+                } catch (error) {
+                    showCustomMessageBox('Invalid JSON file. Please upload a valid conversations.json file.', 'Error');
+                    console.error('File parsing error:', error);
                 }
-                // Handle single conversation object
-                else if (data.title || data.mapping || data.messages) {
-                    const htmlContent = createConversationHTML(data);
-                    const messageCount = data.mapping ? 
-                        Object.values(data.mapping).filter(node => node.message && node.message.content).length :
-                        (data.messages?.length || 0);
-                    
-                    conversations.push({
-                        id: data.id || `conv_${Date.now()}`,
-                        title: data.title || 'Conversation',
-                        htmlContent: htmlContent,
-                        timestamp: data.create_time ? new Date(data.create_time * 1000).toISOString() : new Date().toISOString(),
-                        messageCount: messageCount,
-                        originalData: data
-                    });
-                }
-                
-                console.log('Extracted conversations:', conversations);
-                return conversations;
-            } catch (error) {
-                console.error('JSON parsing error:', error);
-                alert('Error parsing JSON: ' + error.message);
-                return [];
-            }
+            };
+            reader.readAsText(file);
         }
 
-        function parseHTMLContent(htmlContent) {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(htmlContent, 'text/html');
-            const conversations = [];
-            
-            // Extract title
-            const title = doc.querySelector('title')?.textContent || 
-                          doc.querySelector('h1, h2, h3')?.textContent ||
-                          'HTML Document';
-            
-            // Count potential messages (rough estimate)
-            const messageIndicators = htmlContent.match(/user:|assistant:|human:|chatgpt:|<div[^>]*class[^>]*message/gi) || [];
-            
-            conversations.push({
-                id: `html_${Date.now()}`,
-                title: title.substring(0, 100),
-                htmlContent: htmlContent,
-                timestamp: new Date().toISOString(),
-                messageCount: messageIndicators.length,
-                originalData: { htmlContent }
+        function processConversations(jsonData) {
+            return jsonData.map(conv => {
+                const title = conv.title || 'Untitled Conversation';
+                const id = conv.id || crypto.randomUUID();
+                const createTime = new Date(conv.create_time * 1000).toLocaleString();
+                const htmlContent = createHtmlForConversation(conv);
+                return { id, title, createTime, htmlContent, originalData: conv };
             });
-            
-            return conversations;
         }
 
-        async function handleFileUpload(event) {
-            const files = Array.from(event.target.files);
-            if (files.length === 0) return;
-            
-            showLoading(true);
-            
-            try {
-                const allConversations = [];
-                
-                for (const file of files) {
-                    console.log('Processing file:', file.name);
-                    const content = await file.text();
-                    let extractedConversations = [];
-                    
-                    if (file.name.toLowerCase().endsWith('.json')) {
-                        extractedConversations = parseJSONExport(content);
-                    } else if (file.name.toLowerCase().endsWith('.html')) {
-                        extractedConversations = parseHTMLContent(content);
+        function formatMarkdown(text) {
+            let formattedText = text;
+
+            // Handle code blocks (multi-line) first to prevent issues with other rules
+            formattedText = formattedText.replace(/```([\s\S]*?)```/g, '<pre class="message-code">$1</pre>');
+            // Handle inline code (single backticks)
+            formattedText = formattedText.replace(/`([^`]+?)`/g, '<code>$1</code>');
+
+            // Handle links: [text](url)
+            formattedText = formattedText.replace(/\[([^\]]+?)\]\((.*?)\)/g, '<a href="$2" class="text-blue-500 hover:underline" target="_blank">$1</a>');
+
+            // Handle headings (#, ##, ...)
+            formattedText = formattedText.replace(/^#{6}\s(.*)$/gm, '<h6>$1</h6>');
+            formattedText = formattedText.replace(/^#{5}\s(.*)$/gm, '<h5>$1</h5>');
+            formattedText = formattedText.replace(/^#{4}\s(.*)$/gm, '<h4>$1</h4>');
+            formattedText = formattedText.replace(/^#{3}\s(.*)$/gm, '<h3>$1</h3>');
+            formattedText = formattedText.replace(/^#{2}\s(.*)$/gm, '<h2>$1</h2>');
+            formattedText = formattedText.replace(/^#{1}\s(.*)$/gm, '<h1>$1</h1>');
+
+            // Handle lists (ul)
+            formattedText = formattedText.replace(/^(\s*[-*]\s.*(\n\s*[-*]\s.*)*)/gm, '<ul>$1</ul>');
+            formattedText = formattedText.replace(/^\s*[-*]\s(.*)$/gm, '<li class="list-disc ml-6">$1</li>');
+
+            // Handle lists (ol)
+            formattedText = formattedText.replace(/^(\s*\d+\.\s.*(\n\s*\d+\.\s.*)*)/gm, '<ol>$1</ol>');
+            formattedText = formattedText.replace(/^\s*\d+\.\s(.*)$/gm, '<li class="list-decimal ml-6">$1</li>');
+
+            // Handle horizontal rules (---)
+            formattedText = formattedText.replace(/^-{3,}\s*$/gm, '<hr class="my-4 border-gray-300">');
+
+            // Then convert bolding and italics
+            formattedText = formattedText.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>'); // Bold & Italic
+            formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Bold
+            formattedText = formattedText.replace(/\*(.*?)\*/g, '<em>$1</em>'); // Italic
+
+            return formattedText;
+        }
+
+        function createHtmlForConversation(convData) {
+            const title = convData.title || 'Untitled Conversation';
+            const mapping = convData.mapping || {};
+            const messagesHtml = Object.values(mapping)
+                .filter(node => node.message && node.message.content)
+                .map(node => {
+                    const role = node.message.author.role;
+                    let author = '';
+                    if (role === 'user') {
+                        author = 'User';
+                    } else if (role === 'assistant') {
+                        author = 'Assistant';
+                    } else if (role === 'tool') {
+                        author = 'Tool';
                     }
-                    
-                    // Add source file info
-                    extractedConversations.forEach(conv => {
-                        conv.sourceFile = file.name;
-                    });
-                    
-                    console.log(`Extracted ${extractedConversations.length} conversations from ${file.name}`);
-                    allConversations.push(...extractedConversations);
-                }
-                
-                conversations.push(...allConversations);
-                updateFilesList(files);
-                
-                if (allConversations.length === 0) {
-                    showNoConversations(true);
-                } else {
-                    showConversations();
-                }
-                
-            } catch (error) {
-                console.error('Processing error:', error);
-                alert('Error processing files: ' + error.message);
-            } finally {
-                showLoading(false);
-            }
+
+                    const parts = node.message.content.parts && Array.isArray(node.message.content.parts) ? node.message.content.parts : [];
+
+                    const partsHtml = parts.map(part => {
+                        let contentText = '';
+                        if (typeof part === 'string') {
+                            contentText = part;
+                        } else if (part.text) {
+                            contentText = part.text;
+                        } else if (part.content_type === 'image_asset_pointer') {
+                            return '<div>[Image]</div>';
+                        }
+
+                        if (contentText) {
+                            // Apply Markdown formatting here
+                            const formattedContent = formatMarkdown(contentText);
+                            return `<div class="message-text">${formattedContent}</div>`;
+                        }
+                        return '';
+                    }).join('');
+
+                    return `
+                        <div class="bg-gray-50 rounded-lg p-4 mb-4 shadow-sm">
+                            <div class="font-semibold text-lg mb-2">${author}</div>
+                            ${partsHtml}
+                        </div>
+                    `;
+                }).join('');
+
+            return `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${title}</title>
+                    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+                    <style>
+                        body {
+                            font-family: 'Inter', sans-serif;
+                            background-color: #f3f4f6;
+                            padding: 2rem;
+                        }
+                        .message-text {
+                            white-space: pre-wrap;
+                            word-wrap: break-word;
+                        }
+                        .message-code {
+                            white-space: pre-wrap;
+                            background-color: #1f2937;
+                            color: #f9fafb;
+                            padding: 1rem;
+                            border-radius: 0.5rem;
+                            overflow-x: auto;
+                            font-family: monospace;
+                        }
+                        ul, ol {
+                            padding-left: 1.5rem;
+                            margin-bottom: 1rem;
+                        }
+                        li {
+                            margin-bottom: 0.25rem;
+                        }
+                    </style>
+                </head>
+                <body class="p-8">
+                    <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-6">
+                        <h1 class="text-3xl font-bold mb-6">${title}</h1>
+                        <div>${messagesHtml}</div>
+                    </div>
+                </body>
+                </html>
+            `;
         }
 
-        function showLoading(show) {
-            document.getElementById('loading').classList.toggle('hidden', !show);
-        }
-
-        function showNoConversations(show) {
-            document.getElementById('noConversations').classList.toggle('hidden', !show);
-        }
-
-        function showConversations() {
-            document.getElementById('controls').classList.remove('hidden');
-            document.getElementById('conversationsList').classList.remove('hidden');
-            document.getElementById('stats').classList.remove('hidden');
-            document.getElementById('noConversations').classList.add('hidden');
-            renderConversations();
-        }
-
-        function updateFilesList(files) {
-            const uploadedFiles = document.getElementById('uploadedFiles');
-            const filesList = document.getElementById('filesList');
-            
-            uploadedFiles.classList.remove('hidden');
-            
-            files.forEach(file => {
-                const li = document.createElement('li');
-                li.textContent = file.name;
-                li.style.marginBottom = '5px';
-                filesList.appendChild(li);
-            });
-        }
-
-        function renderConversations() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filteredConvs = conversations.filter(conv => 
-                !searchTerm || conv.title.toLowerCase().includes(searchTerm)
-            );
-            
-            const container = document.getElementById('conversationsList');
+        function displayConversations(conversations) {
+            const container = document.getElementById('conversationGrid');
             container.innerHTML = '';
-            
-            filteredConvs.forEach(conv => {
-                const item = document.createElement('div');
-                item.className = `conversation-item ${selectedConversations.has(conv.id) ? 'selected' : ''}`;
-                
-                item.innerHTML = `
-                    <input type="checkbox" class="checkbox" ${selectedConversations.has(conv.id) ? 'checked' : ''} 
-                           onchange="toggleSelection('${conv.id}')">
-                    <div class="conversation-info">
-                        <div class="conversation-title">${conv.title}</div>
-                        <div class="conversation-meta">
-                            <span>Source: ${conv.sourceFile}</span>
-                            <span>Messages: ${conv.messageCount}</span>
-                            <span>Date: ${new Date(conv.timestamp).toLocaleDateString()}</span>
+            document.getElementById('conversationList').classList.remove('hidden');
+            document.getElementById('downloadAllSection').classList.remove('hidden');
+
+            conversations.forEach(conv => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-200 transform hover:scale-105 flex flex-col cursor-pointer';
+                card.innerHTML = `
+                    <div class="p-5 flex-grow">
+                        <h3 class="text-xl font-medium truncate mb-1">${conv.title}</h3>
+                        <p class="text-sm text-gray-500">Created: ${conv.createTime}</p>
+                    </div>
+                    <div class="p-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" class="select-checkbox form-checkbox h-5 w-5 text-blue-600 rounded" data-id="${conv.id}">
+                            <span class="text-sm text-gray-700">Select</span>
+                        </label>
+                        <div class="space-x-2">
+                            <button onclick="previewConversation('${conv.id}')" class="text-blue-600 hover:text-blue-800 transition-colors duration-200">Preview</button>
+                            <button onclick="downloadConversation('${conv.id}')" class="text-purple-600 hover:text-purple-800 transition-colors duration-200">Download</button>
                         </div>
                     </div>
-                    <div class="conversation-actions">
-                        <button class="btn btn-primary btn-small" onclick="previewConversation('${conv.id}')">
-                            👁 Preview
-                        </button>
-                        <button class="btn btn-success btn-small" onclick="downloadConversation('${conv.id}')">
-                            📥 HTML
-                        </button>
-                    </div>
                 `;
-                
-                container.appendChild(item);
+                container.appendChild(card);
             });
-            
-            updateStats(filteredConvs.length);
-        }
 
-        function updateStats(filteredCount) {
-            document.getElementById('totalCount').textContent = conversations.length;
-            document.getElementById('totalConversations').textContent = conversations.length;
-            document.getElementById('filteredCount').textContent = filteredCount;
-            document.getElementById('selectedCount').textContent = selectedConversations.size;
-            
-            const downloadBtn = document.getElementById('downloadBtn');
-            downloadBtn.disabled = selectedConversations.size === 0;
-        }
-
-        function filterConversations() {
-            renderConversations();
-        }
-
-        function toggleSelection(convId) {
-            if (selectedConversations.has(convId)) {
-                selectedConversations.delete(convId);
-            } else {
-                selectedConversations.add(convId);
-            }
-            renderConversations();
-        }
-
-        function selectAll() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filteredConvs = conversations.filter(conv => 
-                !searchTerm || conv.title.toLowerCase().includes(searchTerm)
-            );
-            
-            filteredConvs.forEach(conv => selectedConversations.add(conv.id));
-            renderConversations();
-        }
-
-        function clearSelection() {
-            selectedConversations.clear();
-            renderConversations();
+            document.querySelectorAll('.select-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const id = e.target.dataset.id;
+                    if (e.target.checked) {
+                        selectedConversations.add(id);
+                    } else {
+                        selectedConversations.delete(id);
+                    }
+                });
+            });
         }
 
         function downloadConversation(convId) {
+            console.log(`Attempting to download conversation with ID: ${convId}`);
             const conv = conversations.find(c => c.id === convId);
-            if (!conv) return;
-            
-            try {
-                const element = document.createElement('a');
-                const file = new Blob([conv.htmlContent], { type: 'text/html;charset=utf-8' });
-                element.href = URL.createObjectURL(file);
-                element.download = `${conv.title.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_').substring(0, 50)}.html`;
-                document.body.appendChild(element);
-                element.click();
-                document.body.removeChild(element);
-                URL.revokeObjectURL(element.href);
-            } catch (error) {
-                console.error('Download error:', error);
-                alert('Download failed. Please try again.');
+            if (conv) {
+                downloadFile(conv.htmlContent, `${conv.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html`, 'text/html');
+            } else {
+                console.error(`Conversation with ID ${convId} not found.`);
             }
         }
 
+        function downloadAllConversations() {
+            conversations.forEach(conv => {
+                downloadFile(conv.htmlContent, `${conv.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html`, 'text/html');
+            });
+        }
+
         function downloadSelected() {
-            if (selectedConversations.size === 0) return;
-            
+            if (selectedConversations.size === 0) {
+                 showCustomMessageBox('Please select at least one conversation to download.', 'Notice');
+                 return;
+            }
             const selectedConvs = conversations.filter(conv => selectedConversations.has(conv.id));
-            selectedConvs.forEach(conv => downloadConversation(conv.id));
+            selectedConvs.forEach(conv => {
+                downloadFile(conv.htmlContent, `${conv.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html`, 'text/html');
+            });
+        }
+
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         function previewConversation(convId) {
             const conv = conversations.find(c => c.id === convId);
             if (!conv) return;
-            
-            previewConversation = conv;
+            currentPreviewConversation = conv;
             document.getElementById('previewTitle').textContent = `Preview: ${conv.title}`;
             document.getElementById('previewIframe').srcdoc = conv.htmlContent;
-            
             document.getElementById('mainInterface').classList.add('hidden');
             document.getElementById('previewSection').classList.remove('hidden');
         }
@@ -855,13 +348,29 @@
         function closePreview() {
             document.getElementById('mainInterface').classList.remove('hidden');
             document.getElementById('previewSection').classList.add('hidden');
-            previewConversation = null;
+            currentPreviewConversation = null;
         }
 
         function downloadPreviewConversation() {
-            if (previewConversation) {
-                downloadConversation(previewConversation.id);
+            if (currentPreviewConversation) {
+                downloadFile(currentPreviewConversation.htmlContent, `${currentPreviewConversation.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html`, 'text/html');
             }
+        }
+
+        // Custom Modal UI instead of alert()
+        function showCustomMessageBox(message, title = 'Message') {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50';
+            modal.innerHTML = `
+                <div class="relative bg-white rounded-lg shadow-xl p-8 max-w-sm mx-auto">
+                    <h3 class="text-xl font-bold mb-4">${title}</h3>
+                    <p class="text-gray-700 mb-6">${message}</p>
+                    <div class="flex justify-end">
+                        <button class="bg-blue-600 text-white font-bold py-2 px-4 rounded-full hover:bg-blue-700 transition-colors" onclick="this.closest('.relative').parentElement.remove()">OK</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
         }
     </script>
 </body>
