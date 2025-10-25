@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Stargazer's Cabin</title>
+    <!-- 1. Load Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 2. Load Tone.js for web audio -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+    
+    <style>
+        /* Dark, elegant theme for a night-sky setting */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0b14; /* Very dark purple/blue */
+            color: #E0F2F1; /* Pale cyan text */
+        }
+        
+        .scene {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .active-scene {
+            display: block;
+        }
+
+        /* Dramatic gradient for the night sky scenes */
+        .night-sky {
+            background: linear-gradient(to bottom, #0b0b14 0%, #172554 100%);
+        }
+
+        .interactive-item {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Smooth interaction curve */
+            border-radius: 0.75rem; 
+            box-shadow: 0 0 15px rgba(100, 200, 255, 0.1);
+        }
+
+        .interactive-item:hover {
+            transform: scale(1.05) translateZ(10px); 
+            box-shadow: 0 0 25px rgba(100, 200, 255, 0.5), 0 0 5px rgba(100, 200, 255, 0.3);
+            z-index: 10;
+        }
+        
+        /* Subtle glow for critical items (Runes) */
+        .rune-glow {
+            filter: drop-shadow(0 0 5px #38BDF8);
+        }
+
+        /* Message Box Styling - Clean lines, celestial blue accent */
+        #message-box {
+            border-radius: 1rem;
+            border: 3px solid #06B6D4; /* Cyan accent */
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            color: #1F2937;
+        }
+        
+        /* Star Field background for Title and End */
+        .star-field {
+            background-image: radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+                              radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                              radial-gradient(circle at 80% 90%, rgba(255, 255, 255, 0.3) 1.5px, transparent 1.5px);
+            background-repeat: repeat;
+            background-size: 200px 200px;
+        }
+        
+        .cabin-wood {
+            background-color: #443322; /* Darker, sophisticated wood tone */
+        }
+        
+        /* Loader spinner */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="w-full h-screen overflow-hidden">
+
+    <!-- Main Game Container -->
+    <div id="game-container" class="w-full h-screen relative">
+
+        <!-- ======== TITLE SCREEN (Scene 0) - Celestial Drama ======== -->
+        <div id="scene-title" class="scene active-scene flex flex-col justify-center items-center text-center p-8 night-sky star-field">
+            <h1 class="text-7xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-cyan-400 drop-shadow-lg" style="letter-spacing: -3px;">
+                The Stargazer's Cabin
+            </h1>
+            <h2 class="text-3xl md:text-4xl font-light text-cyan-200 mt-4 italic">
+                A Birthday Quest for Maya
+            </h2>
+            
+            <!-- Elegant "Start" Button -->
+            <button id="start-button" class="mt-12 bg-gradient-to-r from-indigo-700 to-purple-800 text-white font-bold text-3xl px-12 py-6 rounded-xl shadow-2xl transition-all transform hover:scale-105 border-2 border-cyan-400">
+                Begin The Night
+            </button>
+        </div>
+
+        <!-- ======== CABIN PORCH (Scene 1) - Cozy and Dark ======== -->
+        <div id="scene-cabin" class="scene night-sky">
+            
+            <!-- Cabin Structure (Simplified, bold geometry) -->
+            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-4/5 md:w-2/3 h-3/4 cabin-wood rounded-t-2xl border-t-8 border-yellow-700 shadow-2xl shadow-indigo-900/50">
+                <!-- Porch light -->
+                <div id="porch-light" class="absolute top-1/4 left-1/4 w-12 h-12 bg-yellow-400 rounded-full interactive-item shadow-yellow-500/50" style="box-shadow: 0 0 20px rgba(251, 191, 36, 0.8);"></div>
+                
+                <!-- Door -->
+                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/4 h-2/3 bg-gray-600 border-4 border-gray-800 rounded-t-xl"></div>
+                
+                <!-- Sister 1 (Clue Giver) -->
+                <div id="sister-1-clue" class="interactive-item" style="bottom: 10%; right: 10%; width: 10%; z-index: 10;">
+                    <svg class="pointer-events-none" viewBox="0 0 40 80"><circle cx="20" cy="15" r="8" fill="#e0f2f1"/><path d="M0 80H40L30 30H10L0 80Z" fill="#7C3AED"/> <!-- Deep Violet -->
+                    </svg>
+                </div>
+                
+                <!-- Clue Book -->
+                <div id="book-clue" class="interactive-item" style="bottom: 40%; left: 30%; width: 5%; z-index: 10;">
+                    <svg class="pointer-events-none" viewBox="0 0 50 50">
+                        <rect x="5" y="15" width="40" height="30" fill="#B45309" rx="3"/>
+                        <rect x="7" y="17" width="36" height="26" fill="#1F2937" rx="1"/>
+                        <path d="M 25 20 L 25 40" stroke="#FBBF24" stroke-width="2"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- NEW: Gemini Hint Button -->
+            <button id="llm-hint-button" class="absolute bottom-4 right-4 bg-purple-700 text-white font-bold px-4 py-2 rounded-full shadow-lg hover:bg-purple-600 transition-colors">
+                Ask for a deeper hint ✨
+            </button>
+
+
+            <!-- Path to Trail -->
+            <div id="to-trail" class="interactive-item bg-gray-800 rounded-full p-3 shadow-md border-2 border-gray-600" style="bottom: 10%; left: 5%; width: 10%;">
+                <p class="text-xl text-cyan-300 text-center font-bold pointer-events-none">Trail</p>
+                <svg class="w-full pointer-events-none" viewBox="0 0 100 100" fill="#fff" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 10 L80 50 L50 90 L20 50 Z" fill="#3B82F6"/>
+                </svg>
+            </div>
+            
+            <!-- Path to Observatory - Locked -->
+            <div id="to-observatory-locked" class="interactive-item bg-gray-900 rounded-full p-3 shadow-md border-2 border-gray-700" style="bottom: 10%; right: 5%; width: 10%;">
+                <p class="text-xl text-red-400 text-center font-bold pointer-events-none">Dome (Locked)</p>
+                <svg class="w-full pointer-events-none" viewBox="0 0 100 100" fill="#fff" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 10 L80 50 L50 90 L20 50 Z" fill="#6B7280"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- ======== FOREST TRAIL (Scene 2) - Rune 1 Location ======== -->
+        <div id="scene-trail" class="scene night-sky">
+            <!-- Forest floor -->
+            <div class="absolute bottom-0 w-full h-1/4 bg-green-900 shadow-inner shadow-green-900/50"></div>
+            
+            <!-- Stylized Tree -->
+            <div class="absolute" style="bottom: 10%; left: 10%; width: 25%;">
+                <svg viewBox="0 0 100 200"><rect x="45" y="100" width="10" height="100" fill="#443322"/><path d="M 50 10 C 20 50, 80 50, 50 100 Z" fill="#14532D"/></svg>
+            </div>
+            
+            <!-- Rune 1 - Hidden in the tree -->
+            <div id="rune-1" class="interactive-item rune-glow" style="bottom: 50%; left: 18%; width: 8%;">
+                <p class="text-3xl text-cyan-300 font-extrabold text-center pointer-events-none">Rune 1</p>
+                <!-- SVG Constellation: The Lyre -->
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="pointer-events-none w-full h-full">
+                    <line x1="30" y1="20" x2="70" y2="20" stroke="#38BDF8" stroke-width="2"/>
+                    <line x1="70" y1="20" x2="80" y2="80" stroke="#38BDF8" stroke-width="2"/>
+                    <line x1="80" y1="80" x2="20" y2="80" stroke="#38BDF8" stroke-width="2"/>
+                    <line x1="20" y1="80" x2="30" y2="20" stroke="#38BDF8" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="5" fill="#FBBF24"/>
+                </svg>
+            </div>
+
+            <!-- Path to Creek -->
+            <div id="to-creek" class="interactive-item bg-gray-800 rounded-full p-3 shadow-md border-2 border-gray-600" style="bottom: 10%; right: 5%; width: 10%;">
+                <p class="text-xl text-cyan-300 text-center font-bold pointer-events-none">Creek</p>
+                <svg class="w-full pointer-events-none" viewBox="0 0 100 100" fill="#fff" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 10 L80 50 L50 90 L20 50 Z" fill="#3B82F6"/>
+                </svg>
+            </div>
+            
+            <!-- Path back to Cabin -->
+            <div id="to-cabin-1" class="interactive-item bg-gray-800 rounded-full p-3 shadow-md border-2 border-gray-600" style="bottom: 10%; left: 5%; width: 10%;">
+                <p class="text-xl text-cyan-300 text-center font-bold pointer-events-none">Cabin</p>
+                <svg class="w-full pointer-events-none" viewBox="0 0 100 100" fill="#fff" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 10 L20 50 L50 90 L80 50 Z" fill="#3B82F6"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- ======== CREEK BED (Scene 3) - Rune 2 Location ======== -->
+        <div id="scene-creek" class="scene night-sky">
+            <!-- Creek Water -->
+            <div class="absolute bottom-0 w-full h-1/3 bg-blue-900 opacity-70" style="clip-path: polygon(0 30%, 100% 0, 100% 100%, 0 100%)"></div>
+            
+            <!-- Stones -->
+            <div id="stone-1" class="interactive-item bg-gray-500 rounded-full shadow-lg" style="bottom: 25%; left: 30%; width: 15%; height: 20%; z-index: 5;"></div>
+            <div id="stone-2-rune" class="interactive-item bg-gray-700 rounded-full shadow-2xl" style="bottom: 15%; left: 50%; width: 20%; height: 25%; z-index: 6;"></div>
+            <div id="stone-3" class="interactive-item bg-gray-500 rounded-full shadow-lg" style="bottom: 10%; left: 75%; width: 10%; height: 15%; z-index: 5;"></div>
+
+            <!-- Rune 2 (Initially hidden) -->
+            <div id="rune-2" class="interactive-item rune-glow" style="bottom: 15%; left: 55%; width: 10%; display: none; z-index: 7;">
+                <p class="text-3xl text-cyan-300 font-extrabold text-center pointer-events-none">Rune 2</p>
+                 <!-- SVG Constellation: The Big Dipper (Ursa Major) -->
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="pointer-events-none w-full h-full">
+                    <line x1="20" y1="20" x2="40" y2="20" stroke="#38BDF8" stroke-width="2"/>
+                    <line x1="40" y1="20" x2="40" y2="60" stroke="#38BDF8" stroke-width="2"/>
+                    <line x1="40" y1="60" x2="70" y2="60" stroke="#38BDF8" stroke-width="2"/>
+                    <line x1="70" y1="60" x2="80" y2="80" stroke="#38BDF8" stroke-width="2"/>
+                    <circle cx="50" cy="40" r="5" fill="#FBBF24"/>
+                </svg>
+            </div>
+            
+            <!-- Path back to Trail -->
+            <div id="to-trail-1" class="interactive-item bg-gray-800 rounded-full p-3 shadow-md border-2 border-gray-600" style="bottom: 10%; left: 5%; width: 10%;">
+                <p class="text-xl text-cyan-300 text-center font-bold pointer-events-none">Trail</p>
+                <svg class="w-full pointer-events-none" viewBox="0 0 100 100" fill="#fff" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 10 L20 50 L50 90 L80 50 Z" fill="#3B82F6"/>
+                </svg>
+            </div>
+        </div>
+        
+        <!-- ======== OBSERVATORY DOME (Scene 4) - Final Puzzle ======== -->
+        <div id="scene-observatory" class="scene night-sky">
+            
+            <!-- Observatory Dome -->
+            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-4/5 md:w-2/3 h-3/4 bg-gray-900 rounded-t-full border-t-8 border-cyan-400 shadow-2xl shadow-indigo-900/80">
+                <!-- Telescope base -->
+                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/4 h-1/2 bg-gray-700 rounded-t-lg"></div>
+                <!-- Telescope barrel -->
+                <div id="telescope" class="absolute top-1/4 left-1/2 -translate-x-1/2 w-1/6 h-2/3 bg-gray-500 rounded-full rotate-12 interactive-item transition-all duration-1000"></div>
+
+                <!-- Rune 3 - Visible but untouchable until final action -->
+                <div id="rune-3" class="absolute rune-glow" style="top: 10%; right: 10%; width: 10%;">
+                    <p class="text-3xl text-cyan-300 font-extrabold text-center pointer-events-none">Rune 3</p>
+                    <!-- SVG Constellation: Orion -->
+                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="pointer-events-none w-full h-full">
+                        <line x1="30" y1="10" x2="20" y2="40" stroke="#38BDF8" stroke-width="2"/>
+                        <line x1="70" y1="10" x2="80" y2="40" stroke="#38BDF8" stroke-width="2"/>
+                        <line x1="20" y1="40" x2="80" y2="40" stroke="#38BDF8" stroke-width="2"/>
+                        <line x1="40" y1="60" x2="60" y2="60" stroke="#38BDF8" stroke-width="2"/>
+                        <line x1="50" y1="40" x2="50" y2="90" stroke="#38BDF8" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="5" fill="#FBBF24"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Rune Slots for puzzle -->
+            <div class="absolute top-10 left-10 p-4 bg-gray-900 rounded-lg border-2 border-cyan-400 shadow-xl" id="rune-slots">
+                <p class="text-xl font-bold text-yellow-300 mb-2">Rune Input (3/3 Required)</p>
+                <div class="flex space-x-2">
+                    <div id="slot-1" class="w-12 h-12 bg-gray-700 rounded flex items-center justify-center text-gray-500 border-dashed border-2 border-gray-500">?</div>
+                    <div id="slot-2" class="w-12 h-12 bg-gray-700 rounded flex items-center justify-center text-gray-500 border-dashed border-2 border-gray-500">?</div>
+                    <div id="slot-3" class="w-12 h-12 bg-gray-700 rounded flex items-center justify-center text-gray-500 border-dashed border-2 border-gray-500">?</div>
+                </div>
+                <button id="activate-telescope" class="mt-4 w-full bg-red-800 text-white font-bold py-2 rounded-lg hover:bg-red-700 transition-colors" disabled>
+                    ACTIVATE
+                </button>
+            </div>
+
+            <!-- Path back to Cabin -->
+            <div id="to-cabin-2" class="interactive-item bg-gray-800 rounded-full p-3 shadow-md border-2 border-gray-600" style="bottom: 10%; left: 5%; width: 10%;">
+                <p class="text-xl text-cyan-300 text-center font-bold pointer-events-none">Cabin</p>
+                <svg class="w-full pointer-events-none" viewBox="0 0 100 100" fill="#fff" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 10 L20 50 L50 90 L80 50 Z" fill="#3B82F6"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- ======== END SCREEN (Scene 5) - Success and Celebration ======== -->
+        <div id="scene-end" class="scene flex flex-col justify-center items-center text-center p-8 bg-gradient-to-br from-indigo-900 to-purple-900 star-field">
+            <h1 class="text-7xl md:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-red-500 drop-shadow-xl" style="letter-spacing: -4px;">
+                HAPPY BIRTHDAY!
+            </h1>
+            <p class="text-3xl md:text-5xl font-light text-cyan-300 mt-6 italic">
+                The stars align for you, Maya.
+            </p>
+            
+            <!-- Dynamic Birthday Message Placeholder -->
+            <div id="llm-birthday-message" class="mt-8 p-6 max-w-2xl bg-white/10 backdrop-blur-sm rounded-xl border-2 border-cyan-400 shadow-2xl">
+                <p id="message-placeholder" class="text-2xl md:text-3xl font-light text-cyan-200 italic">
+                    Awaiting transmission from the cosmos...
+                </p>
+            </div>
+            
+            <button id="restart-button" class="mt-12 bg-gradient-to-r from-teal-500 to-green-600 text-white font-bold text-xl px-8 py-4 rounded-xl shadow-2xl transform transition-transform hover:scale-110">
+                Play Again
+            </button>
+        </div>
+        
+        
+        <!-- ======== MESSAGE BOX (Overlay) - Clean and Teal-Accented ======== -->
+        <div id="message-box" class="absolute bottom-4 left-4 right-4 md:left-1/4 md:right-1/4 p-6 bg-white bg-opacity-95 rounded-xl shadow-xl border-4 border-cyan-500 text-slate-800 text-2xl md:text-3xl font-semibold text-center transition-all transform translate-y-full duration-500 z-50">
+            <span id="message-text">Welcome!</span>
+            <button id="close-message" class="absolute top-2 right-4 text-gray-500 hover:text-gray-900 text-4xl leading-none">&times;</button>
+        </div>
+
+    </div>
+
+    <!-- 3. The Game Logic and Gemini API Integration -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- Gemini API Setup ---
+            const API_KEY = ""; // Kept empty for Canvas
+            const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=" + API_KEY;
+            
+            // --- Utility Functions ---
+            
+            /** Implements exponential backoff for API retries. */
+            async function fetchWithRetry(url, options, maxRetries = 5) {
+                for (let i = 0; i < maxRetries; i++) {
+                    try {
+                        const response = await fetch(url, options);
+                        if (response.status === 429) { // Rate limit
+                            throw new Error('Rate limited');
+                        }
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return await response.json();
+                    } catch (error) {
+                        if (i === maxRetries - 1) throw error;
+                        const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
+                }
+            }
+
+
+            // --- Audio Synths (using Tone.js) ---
+            const clickSound = new Tone.MembraneSynth({ octaves: 4, pitchDecay: 0.1 }).toDestination();
+            const runeFoundSound = new Tone.MetalSynth({ frequency: 1000, envelope: { attack: 0.001, decay: 0.2, sustain: 0.05, release: 0.1 }, harmonicity: 3.1, modulationIndex: 32, resonance: 4000, octaves: 1.5 }).toDestination();
+            const clueSound = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.1 } }).toDestination();
+            const successChord = new Tone.PolySynth(Tone.Synth, { envelope: { attack: 0.01, decay: 0.5, sustain: 0.3, release: 1 }, oscillator: { type: 'sine' } }).toDestination();
+            
+            // --- Game State ---
+            let currentState = 0; // 0: Title, 1: Cabin, 2: Trail, 3: Creek, 4: Observatory, 5: End
+            let runesCollected = []; // Stores IDs of collected runes: ['rune-1', 'rune-2', 'rune-3']
+            const TOTAL_RUNES = 3;
+
+            // --- DOM Elements ---
+            const scenes = [
+                document.getElementById('scene-title'),
+                document.getElementById('scene-cabin'),
+                document.getElementById('scene-trail'),
+                document.getElementById('scene-creek'),
+                document.getElementById('scene-observatory'),
+                document.getElementById('scene-end')
+            ];
+            const startButton = document.getElementById('start-button');
+            const restartButton = document.getElementById('restart-button');
+            const messageBox = document.getElementById('message-box');
+            const messageText = document.getElementById('message-text');
+            const closeMessageButton = document.getElementById('close-message');
+            
+            // Rune elements
+            const rune1 = document.getElementById('rune-1');
+            const rune2 = document.getElementById('rune-2');
+            const runeSlots = [document.getElementById('slot-1'), document.getElementById('slot-2'), document.getElementById('slot-3')];
+            const activateButton = document.getElementById('activate-telescope');
+            const telescope = document.getElementById('telescope');
+            const llmHintButton = document.getElementById('llm-hint-button');
+            const messagePlaceholder = document.getElementById('message-placeholder');
+
+
+            // --- Core Handlers ---
+            
+            function showMessage(text, sound = clickSound) {
+                messageText.textContent = text;
+                messageBox.classList.remove('translate-y-full');
+                messageBox.classList.add('translate-y-0');
+                if (sound && Tone.context.state !== 'running') { Tone.start(); }
+                if (sound) { sound.triggerAttackRelease('C4', '8n'); }
+            }
+
+            function hideMessage() {
+                messageBox.classList.remove('translate-y-0');
+                messageBox.classList.add('translate-y-full');
+            }
+
+            function switchScene(nextState) {
+                scenes.forEach(scene => {
+                    scene.classList.remove('active-scene');
+                });
+                currentState = nextState;
+                scenes[currentState].classList.add('active-scene');
+                hideMessage();
+            }
+
+            function collectRune(runeElement, runeId) {
+                if (!runesCollected.includes(runeId)) {
+                    runeElement.style.pointerEvents = 'none'; 
+                    runeElement.classList.add('opacity-0'); 
+                    
+                    runesCollected.push(runeId);
+                    runeFoundSound.triggerAttackRelease(['G5', 'C6'], '4n');
+                    
+                    updateRuneSlots();
+                    
+                    if (runesCollected.length < TOTAL_RUNES) {
+                         showMessage(`You found a Rune (${runeId})! You need ${TOTAL_RUNES - runesCollected.length} more.`);
+                    } else if (runesCollected.length === TOTAL_RUNES) {
+                        showMessage("You have all three Runes! The Observatory path is unlocked. Proceed to activate the telescope.");
+                        // Enable the observatory path
+                        const obsLocked = document.getElementById('to-observatory-locked');
+                        if (obsLocked) {
+                            obsLocked.id = 'to-observatory';
+                            obsLocked.innerHTML = '<p class="text-xl text-yellow-300 text-center font-bold pointer-events-none">Dome (Unlocked)</p><svg class="w-full pointer-events-none" viewBox="0 0 100 100" fill="#fff" xmlns="http://www.w3.org/2000/svg"><path d="M50 10 L80 50 L50 90 L20 50 Z" fill="#10B981"/></svg>';
+                            document.getElementById('to-observatory').addEventListener('click', () => {
+                                switchScene(4); // Move to Observatory
+                                showMessage("The input panel is ready. Place the Runes into the slots.");
+                            });
+                        }
+                    }
+                } else {
+                    showMessage("You already collected that Rune.");
+                }
+            }
+            
+            function updateRuneSlots() {
+                runesCollected.forEach((rune, index) => {
+                    runeSlots[index].textContent = '★';
+                    runeSlots[index].classList.remove('text-gray-500', 'border-dashed', 'border-gray-500');
+                    runeSlots[index].classList.add('text-yellow-400', 'border-solid', 'border-yellow-400', 'text-4xl');
+                });
+                
+                if (runesCollected.length === TOTAL_RUNES) {
+                    activateButton.disabled = false;
+                    activateButton.classList.remove('bg-red-800');
+                    activateButton.classList.add('bg-green-600', 'hover:bg-green-500');
+                }
+            }
+
+
+            // --- GEMINI API Feature Functions ---
+            
+            async function getLlmHint() {
+                llmHintButton.disabled = true;
+                llmHintButton.innerHTML = '<div class="loader inline-block mr-2"></div> Transmitting...';
+                
+                const runesMap = { 'rune-1': 'Lyre (Tallest Wood/Trail)', 'rune-2': 'Dipper (Deepest Stone/Creek)', 'rune-3': 'Orion (Highest Scope/Observatory)' };
+                const missingRunes = ['rune-1', 'rune-2', 'rune-3'].filter(r => !runesCollected.includes(r)).map(r => runesMap[r]);
+                
+                const userQuery = missingRunes.length === 0 
+                    ? "The user has all runes (Lyre, Dipper, Hunter). Tell them poetically to proceed to the Observatory dome and activate the final scope."
+                    : `The user needs the following runes: ${missingRunes.join(', ')}. Give a single, highly cryptic, and short poetic hint about the *next* location to search. Do not explicitly state the location or the rune name. Just hint at the location or the action needed next. Speak as a wise, ancient voice.`;
+                
+                const systemPrompt = "You are a celestial oracle providing cryptic, short, one-sentence hints for an astronomy puzzle game. Use rich, evocative language related to stars, cosmos, water, or wood. DO NOT use the words 'Rune', 'Lyre', 'Dipper', 'Orion', 'Trail', or 'Creek'.";
+
+                const payload = {
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                };
+
+                try {
+                    const result = await fetchWithRetry(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "The stars are silent right now. Try looking closer at your surroundings.";
+                    
+                    showMessage(text, clueSound);
+
+                } catch (error) {
+                    console.error("Gemini Hint Error:", error);
+                    showMessage("The celestial connection is momentarily lost. The old stars refuse to speak.");
+                } finally {
+                    llmHintButton.disabled = false;
+                    llmHintButton.innerHTML = 'Ask for a deeper hint ✨';
+                }
+            }
+
+            async function generateBirthdayMessage() {
+                // Prevent double activation
+                activateButton.disabled = true;
+                activateButton.innerHTML = '<div class="loader inline-block mr-2"></div> Generating Message...';
+                
+                // Final visual change: Move the telescope and reveal the final Rune 3
+                telescope.style.transform = 'rotate(-10deg) scale(1.1)'; // Telescope moves
+                
+                const runeNames = ['Lyre', 'Dipper', 'Hunter (Orion)'];
+                
+                const userQuery = `Write a short, poetic, and heartfelt birthday message (no more than 50 words) for a person named Maya. The message must reference the following astronomical objects as the keys to her future: ${runeNames.join(', ')}. Start with: "From the High Scope, a message is transmitted:"`;
+                
+                const systemPrompt = "You are a cosmic poet and scribe. Generate a beautiful, inspirational, and concise birthday wish for Maya, focusing heavily on astronomical and celestial imagery. The message should be warm and magical. Include the referenced constellations subtly.";
+
+                const payload = {
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                };
+
+                try {
+                    const result = await fetchWithRetry(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text || "Happy Birthday, Maya! The universe sends its light to you.";
+                    
+                    // Display the generated message on the end screen
+                    messagePlaceholder.textContent = generatedText;
+                    
+                    successChord.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '1n');
+                    showMessage("Access granted! The telescope whirs to life...", successChord);
+                    
+                    // Move to End Screen after message is generated and telescope moves
+                    setTimeout(() => {
+                        switchScene(5);
+                    }, 2000);
+
+                } catch (error) {
+                    console.error("Gemini Message Error:", error);
+                    showMessage("A solar flare has interrupted the final transmission! Try restarting the sequence.", successChord);
+                    activateButton.disabled = false;
+                    activateButton.innerHTML = 'ACTIVATE';
+                    telescope.style.transform = 'rotate(12deg)'; // Reset telescope angle
+                }
+            }
+
+            // --- Event Listeners ---
+
+            startButton.addEventListener('click', () => {
+                switchScene(1); 
+                if (Tone.context.state !== 'running') { Tone.start(); }
+                showMessage("The stars are out, Maya. Find your sister for the first clue.");
+            });
+            
+            restartButton.addEventListener('click', () => {
+                // Reset game state and visuals (existing logic)
+                runesCollected = [];
+                rune1.classList.remove('opacity-0');
+                rune1.style.pointerEvents = 'auto';
+                rune2.style.display = 'none'; 
+                document.getElementById('stone-2-rune').style.pointerEvents = 'auto';
+                
+                // Reset Rune Slots
+                runeSlots.forEach(slot => {
+                    slot.textContent = '?';
+                    slot.className = 'w-12 h-12 bg-gray-700 rounded flex items-center justify-center text-gray-500 border-dashed border-2 border-gray-500';
+                });
+                activateButton.disabled = true;
+                activateButton.className = 'mt-4 w-full bg-red-800 text-white font-bold py-2 rounded-lg hover:bg-red-700 transition-colors';
+                activateButton.innerHTML = 'ACTIVATE'; // Reset button text
+                telescope.style.transform = 'rotate(12deg)'; // Reset telescope angle
+                messagePlaceholder.textContent = 'Awaiting transmission from the cosmos...'; // Reset end screen message
+                
+                // Reset observatory path
+                const obsPath = document.getElementById('to-observatory') || document.getElementById('to-observatory-locked');
+                if (obsPath.id === 'to-observatory') {
+                    // Note: In a true environment, we'd need to properly remove the event listener, but since we recreate the innerHTML, this usually suffices for simplicity.
+                    obsPath.id = 'to-observatory-locked';
+                    obsPath.innerHTML = '<p class="text-xl text-red-400 text-center font-bold pointer-events-none">Dome (Locked)</p><svg class="w-full pointer-events-none" viewBox="0 0 100 100" fill="#fff" xmlns="http://www.w3.org/2000/svg"><path d="M50 10 L80 50 L50 90 L20 50 Z" fill="#6B7280"/></svg>';
+                }
+                
+                switchScene(0);
+            });
+
+            closeMessageButton.addEventListener('click', hideMessage);
+            
+            // --- Scene 1 (Cabin) interactions ---
+            document.getElementById('sister-1-clue').addEventListener('click', () => {
+                showMessage("Your sister says: 'The first Rune hides in the **tallest** wood, the second under the **deepest** stone, and the third is the sight from the **highest** scope.'", clueSound);
+            });
+            llmHintButton.addEventListener('click', getLlmHint); // New LLM hint call
+            
+            document.getElementById('porch-light').addEventListener('click', () => {
+                showMessage("A warm light. It only seems to illuminate the porch.");
+            });
+            document.getElementById('book-clue').addEventListener('click', () => {
+                showMessage("It's a dusty old astronomy book. It says: *'The key to the final view is the Lyre, the Dipper, and the Hunter.'*");
+            });
+            document.getElementById('to-trail').addEventListener('click', () => {
+                switchScene(2); 
+                showMessage("The path is dark. Remember, the first Rune hides in the tallest wood.");
+            });
+            document.getElementById('to-observatory-locked').addEventListener('click', () => {
+                showMessage("The path to the Observatory is locked. You must find all three Runes first!");
+            });
+
+            // --- Scene 2 (Trail) interactions ---
+            rune1.addEventListener('click', (e) => collectRune(e.currentTarget, 'rune-1'));
+            document.getElementById('to-creek').addEventListener('click', () => {
+                switchScene(3);
+                showMessage("You reach the creek bed. Remember, the second Rune is under the deepest stone.");
+            });
+            document.getElementById('to-cabin-1').addEventListener('click', () => {
+                switchScene(1); 
+                showMessage("Back at the cabin porch.");
+            });
+
+            // --- Scene 3 (Creek) interactions ---
+            document.getElementById('stone-1').addEventListener('click', () => {
+                showMessage("Just a cold, wet stone.");
+            });
+            document.getElementById('stone-3').addEventListener('click', () => {
+                showMessage("A small, smooth pebble.");
+            });
+            document.getElementById('stone-2-rune').addEventListener('click', (e) => {
+                e.currentTarget.style.pointerEvents = 'none';
+                rune2.style.display = 'block';
+                showMessage("You lift the largest stone. A celestial pattern is glowing beneath it!", runeFoundSound);
+            });
+            rune2.addEventListener('click', (e) => collectRune(e.currentTarget, 'rune-2'));
+            
+            document.getElementById('to-trail-1').addEventListener('click', () => {
+                switchScene(2);
+                showMessage("Back on the forest trail.");
+            });
+            
+            // --- Scene 4 (Observatory) interactions ---
+            document.getElementById('to-cabin-2').addEventListener('click', () => {
+                switchScene(1);
+                showMessage("Back at the cabin porch.");
+            });
+            
+            activateButton.addEventListener('click', () => {
+                if (runesCollected.length === TOTAL_RUNES) {
+                    generateBirthdayMessage(); // CALLS GEMINI API
+                } else {
+                    showMessage("The input is incomplete. You need all three Runes!", clickSound);
+                }
+            });
+            
+        });
+    </script>
+</body>
+</html>
