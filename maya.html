@@ -3,644 +3,741 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Stargazer's Cabin</title>
-    <!-- 1. Load Tailwind CSS for styling -->
+    <title>Happy Birthday, Maya!</title>
+    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 2. Load Tone.js for web audio -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        /* Dark, elegant theme for a night-sky setting */
+        /* Custom CSS for the Game Board and Classy Country Theme */
+        :root {
+            --color-green-moss: #8b9d83;   /* Moss Green - Tractor */
+            --color-red-barn: #c4453b;     /* Barn Red - Truck */
+            --color-blue-sky: #7091a0;     /* Dusty Blue - ATV */
+            --color-purple-lavender: #b57edc; /* Lavender - Carriage */
+            --color-brown-saddle: #a0522d;   /* Saddle Brown - Pony */
+            --color-yellow-sun: #f1c40f;    /* Bright Yellow - Boat */
+            --color-gold: #e2b74f;         /* Classy Gold */
+            --color-paper: #fffcf2;        /* Off-White Paper */
+            --color-shadow: rgba(0, 0, 0, 0.15);
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0b0b14; /* Very dark purple/blue */
-            color: #E0F2F1; /* Pale cyan text */
+            background-color: var(--color-paper);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
         }
-        
-        .scene {
-            display: none;
+
+        #game-board {
+            max-width: 900px;
             width: 100%;
-            height: 100vh;
+            padding: 1.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px var(--color-shadow), 0 0 0 8px var(--color-gold);
+            background: linear-gradient(135deg, #f0e6d6 0%, #ffffff 100%);
+            border: 5px solid var(--color-gold);
+        }
+
+        .vehicle {
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
+            border-radius: 16px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             position: relative;
-            overflow: hidden;
-            background-size: cover;
-            background-position: center;
-        }
-        
-        .active-scene {
-            display: block;
-        }
-
-        /* Dramatic gradient for the night sky scenes */
-        .night-sky {
-            background: linear-gradient(to bottom, #0b0b14 0%, #172554 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 130px; 
+            width: 130px;
         }
 
-        .interactive-item {
-            position: absolute;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Smooth interaction curve */
-            border-radius: 0.75rem; 
-            box-shadow: 0 0 15px rgba(100, 200, 255, 0.1);
+        .vehicle:active {
+            cursor: grabbing;
+            z-index: 1000;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            transform: scale(1.08);
+        }
+        
+        /* Styles for when the vehicle is locked in place */
+        .vehicle.matched {
+            cursor: default !important;
+            box-shadow: 0 0 15px var(--color-gold) !important;
+            opacity: 1;
+            transform: none !important;
+            transition: none;
+        }
+        
+        .vehicle-label {
+             font-size: 0.875rem;
+             font-weight: 700;
+             color: #4b5563;
+             margin-bottom: 0.25rem;
         }
 
-        .interactive-item:hover {
-            transform: scale(1.05) translateZ(10px); 
-            box-shadow: 0 0 25px rgba(100, 200, 255, 0.5), 0 0 5px rgba(100, 200, 255, 0.3);
-            z-index: 10;
+        .target {
+            border: 4px dashed;
+            border-radius: 16px;
+            height: 130px;
+            width: 130px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.4s ease-in-out;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+            margin: 0.5rem;
         }
         
-        /* Subtle glow for critical items (Runes) */
-        .rune-glow {
-            filter: drop-shadow(0 0 5px #38BDF8);
+        /* Target Colors (Same as before) */
+        .target-green { border-color: var(--color-green-moss); background-color: rgba(139, 157, 131, 0.05); }
+        .target-red { border-color: var(--color-red-barn); background-color: rgba(196, 69, 59, 0.05); }
+        .target-blue { border-color: var(--color-blue-sky); background-color: rgba(112, 145, 160, 0.05); }
+        .target-purple { border-color: var(--color-purple-lavender); background-color: rgba(181, 126, 220, 0.05); }
+        .target-brown { border-color: var(--color-brown-saddle); background-color: rgba(160, 82, 45, 0.05); }
+        .target-yellow { border-color: var(--color-yellow-sun); background-color: rgba(241, 196, 15, 0.05); }
+
+        /* Matched state for target */
+        .target.filled {
+            border-style: solid;
+            border-width: 4px;
+            box-shadow: 0 0 20px rgba(226, 183, 79, 0.7);
+            opacity: 1;
+        }
+        .target-green.filled { border-color: var(--color-green-moss); background-color: rgba(139, 157, 131, 0.2); }
+        .target-red.filled { border-color: var(--color-red-barn); background-color: rgba(196, 69, 59, 0.2); }
+        .target-blue.filled { border-color: var(--color-blue-sky); background-color: rgba(112, 145, 160, 0.2); }
+        .target-purple.filled { border-color: var(--color-purple-lavender); background-color: rgba(181, 126, 220, 0.2); }
+        .target-brown.filled { border-color: var(--color-brown-saddle); background-color: rgba(160, 82, 45, 0.2); }
+        .target-yellow.filled { border-color: var(--color-yellow-sun); background-color: rgba(241, 196, 15, 0.2); }
+
+
+        /* SVG styles for the vehicles */
+        .svg-icon {
+            width: 85px;
+            height: 85px;
+            fill: currentColor; /* Use currentColor to inherit color from the parent's utility class */
+        }
+        .green-fill { color: var(--color-green-moss); }
+        .red-fill { color: var(--color-red-barn); }
+        .blue-fill { color: var(--color-blue-sky); }
+        .purple-fill { color: var(--color-purple-lavender); }
+        .brown-fill { color: var(--color-brown-saddle); }
+        .yellow-fill { color: var(--color-yellow-sun); }
+
+        /* The Win Modal */
+        #win-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: none;
+            animation: fadeIn 0.5s forwards;
+            overflow-y: auto; /* Allow scrolling for modal content */
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .modal-content {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes popIn { 
+            0% { transform: scale(0.5); opacity: 0; } 
+            100% { transform: scale(1); opacity: 1; } 
         }
 
-        /* Message Box Styling - Clean lines, celestial blue accent */
-        #message-box {
-            border-radius: 1rem;
-            border: 3px solid #06B6D4; /* Cyan accent */
-            background-color: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            color: #1F2937;
+        .modal-confetti {
+            font-size: 2rem;
+            animation: pulse 1s infinite alternate;
+        }
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
         }
         
-        /* Star Field background for Title and End */
-        .star-field {
-            background-image: radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.2) 1px, transparent 1px),
-                              radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-                              radial-gradient(circle at 80% 90%, rgba(255, 255, 255, 0.3) 1.5px, transparent 1.5px);
-            background-repeat: repeat;
-            background-size: 200px 200px;
-        }
-        
-        .cabin-wood {
-            background-color: #443322; /* Darker, sophisticated wood tone */
-        }
-        
-        /* Loader spinner */
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        /* Audio Button Feedback */
+        #audio-button.playing {
+            background-color: #6d28d9; /* Indigo 700 */
+            box-shadow: 0 0 15px #a78bfa; /* Violet glow */
         }
     </style>
 </head>
-<body class="w-full h-screen overflow-hidden">
+<body class="bg-gray-100 p-4">
 
-    <!-- Main Game Container -->
-    <div id="game-container" class="w-full h-screen relative">
+    <div id="game-board">
+        <h1 class="text-4xl font-black text-center mb-2 text-gray-800">
+            Happy 4th Birthday, <span class="text-amber-600">Maya!</span>
+        </h1>
+        <p class="text-center text-lg text-gray-600 mb-8">
+            Park all <span class="font-extrabold text-gray-800">SIX</span> classy cruisers in their special spots!
+        </p>
 
-        <!-- ======== TITLE SCREEN (Scene 0) - Celestial Drama ======== -->
-        <div id="scene-title" class="scene active-scene flex flex-col justify-center items-center text-center p-8 night-sky star-field">
-            <h1 class="text-7xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-cyan-400 drop-shadow-lg" style="letter-spacing: -3px;">
-                The Stargazer's Cabin
-            </h1>
-            <h2 class="text-3xl md:text-4xl font-light text-cyan-200 mt-4 italic">
-                A Birthday Quest for Maya
-            </h2>
+        <!-- Targets Section -->
+        <div id="targets-container" class="flex justify-center flex-wrap gap-2 mb-10 p-2">
+            <div data-vehicle="tractor" data-color="green" class="target target-green"><p class="text-gray-700 font-bold text-base text-center target-label">TRACTOR</p></div>
+            <div data-vehicle="carriage" data-color="purple" class="target target-purple"><p class="text-gray-700 font-bold text-base text-center target-label">CARRIAGE</p></div>
+            <div data-vehicle="truck" data-color="red" class="target target-red"><p class="text-gray-700 font-bold text-base text-center target-label">TRUCK</p></div>
+            <div data-vehicle="boat" data-color="yellow" class="target target-yellow"><p class="text-gray-700 font-bold text-base text-center target-label">BOAT</p></div>
+            <div data-vehicle="pony" data-color="brown" class="target target-brown"><p class="text-gray-700 font-bold text-base text-center target-label">PONY</p></div>
+            <div data-vehicle="atv" data-color="blue" class="target target-blue"><p class="text-gray-700 font-bold text-base text-center target-label">4-WHEELER</p></div>
+        </div>
+
+        <!-- Draggable Vehicles Section -->
+        <div id="vehicles-container" class="flex justify-center flex-wrap gap-4 p-4 bg-white/50 rounded-xl shadow-lg border border-gray-200">
             
-            <!-- Elegant "Start" Button -->
-            <button id="start-button" class="mt-12 bg-gradient-to-r from-indigo-700 to-purple-800 text-white font-bold text-3xl px-12 py-6 rounded-xl shadow-2xl transition-all transform hover:scale-105 border-2 border-cyan-400">
-                Begin The Night
+            <!-- 1. ATV/Four-Wheeler (Blue) -->
+            <div id="atv" data-vehicle="atv" data-color="blue" class="vehicle p-3 bg-white">
+                <p class="vehicle-label">4-Wheeler</p>
+                <svg viewBox="0 0 24 24" class="svg-icon blue-fill">
+                    <path d="M11 15h2v2h-2zm-3-4h2v2H8zm6 0h2v2h-2zm-2-2c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v4c0 1.1-.9 2-2 2h-4c-1.1 0-2-.9-2-2zm-8 8H4v-2c0-1.1.9-2 2-2h2v4zm10 0h-4v-4h4c1.1 0 2 .9 2 2v2c0 1.1-.9 2-2 2zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/>
+                </svg>
+            </div>
+            
+            <!-- 2. Tractor (Green) -->
+            <div id="tractor" data-vehicle="tractor" data-color="green" class="vehicle p-3 bg-white">
+                <p class="vehicle-label">Tractor</p>
+                <svg viewBox="0 0 24 24" class="svg-icon green-fill">
+                    <path d="M21 15.5H18V13h3V9h-3V7.5C18 6.67 17.33 6 16.5 6h-3C12.67 6 12 6.67 12 7.5V11h-2V7.5C10 6.67 9.33 6 8.5 6h-3C4.67 6 4 6.67 4 7.5V13H1v2.5H4v4.5H1v1.5h22v-1.5h-2v-4.5zM6 13V9h2v4H6zm10 0V9h2v4h-2zM4 18h2v2H4v-2zm14 2h-2v-2h2v2z"/>
+                </svg>
+            </div>
+            
+            <!-- 3. Pony (Brown) -->
+            <div id="pony" data-vehicle="pony" data-color="brown" class="vehicle p-3 bg-white">
+                <p class="vehicle-label">Pony</p>
+                <!-- Simple stylized horse profile -->
+                <svg viewBox="0 0 24 24" class="svg-icon brown-fill">
+                    <path d="M20 12c0-2.21-1.79-4-4-4H8c-2.21 0-4 1.79-4 4v2h2v-2c0-1.1.9-2 2-2h8c1.1 0 2 .9 2 2v2h2v-2zm-8-7c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 15c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                </svg>
+            </div>
+
+            <!-- 4. Truck (Red) -->
+            <div id="truck" data-vehicle="truck" data-color="red" class="vehicle p-3 bg-white">
+                <p class="vehicle-label">Truck</p>
+                <svg viewBox="0 0 24 24" class="svg-icon red-fill">
+                    <path d="M20 12c0-2.21-1.79-4-4-4H8c-2.21 0-4 1.79-4 4v2h2v-2c0-1.1.9-2 2-2h8c1.1 0 2 .9 2 2v2h2v-2zm-8-7c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 15c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                </svg>
+            </div>
+
+            <!-- 5. Boat (Yellow) -->
+            <div id="boat" data-vehicle="boat" data-color="yellow" class="vehicle p-3 bg-white">
+                <p class="vehicle-label">Boat</p>
+                <svg viewBox="0 0 24 24" class="svg-icon yellow-fill">
+                    <path d="M22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v4c0 1.1.9 2 2 2h1v-2h14v2h1c1.1 0 2-.9 2-2V6zm-8 10h-4c-1.1 0-2 .9-2 2s.9 2 2 2h4c1.1 0 2-.9 2-2s-.9-2-2-2zM4 14v4h16v-4H4z"/>
+                </svg>
+            </div>
+
+            <!-- 6. Carriage (Purple) -->
+            <div id="carriage" data-vehicle="carriage" data-color="purple" class="vehicle p-3 bg-white">
+                <p class="vehicle-label">Carriage</p>
+                <!-- Simple stylized wagon/carriage -->
+                <svg viewBox="0 0 24 24" class="svg-icon purple-fill">
+                    <path d="M21 4H3C1.9 4 1 4.9 1 6v10c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-1 12H4V6h16v10zM6 16c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm12 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Reset Button -->
+        <div class="text-center mt-8">
+            <button id="reset-button" class="px-6 py-3 bg-amber-500 text-white font-bold rounded-full shadow-lg hover:bg-amber-600 transition transform hover:scale-105">
+                Reset Game
             </button>
         </div>
-
-        <!-- ======== CABIN PORCH (Scene 1) - Cozy and Dark ======== -->
-        <div id="scene-cabin" class="scene night-sky">
-            
-            <!-- Cabin Structure (Simplified, bold geometry) -->
-            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-4/5 md:w-2/3 h-3/4 cabin-wood rounded-t-2xl border-t-8 border-yellow-700 shadow-2xl shadow-indigo-900/50">
-                <!-- Porch light -->
-                <div id="porch-light" class="absolute top-1/4 left-1/4 w-12 h-12 bg-yellow-400 rounded-full interactive-item shadow-yellow-500/50" style="box-shadow: 0 0 20px rgba(251, 191, 36, 0.8);"></div>
-                
-                <!-- Door -->
-                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/4 h-2/3 bg-gray-600 border-4 border-gray-800 rounded-t-xl"></div>
-                
-                <!-- Sister 1 (Clue Giver) -->
-                <div id="sister-1-clue" class="interactive-item" style="bottom: 10%; right: 10%; width: 10%; z-index: 10;">
-                    <svg class="pointer-events-none" viewBox="0 0 40 80"><circle cx="20" cy="15" r="8" fill="#e0f2f1"/><path d="M0 80H40L30 30H10L0 80Z" fill="#7C3AED"/> <!-- Deep Violet -->
-                    </svg>
-                </div>
-                
-                <!-- Clue Book -->
-                <div id="book-clue" class="interactive-item" style="bottom: 40%; left: 30%; width: 5%; z-index: 10;">
-                    <svg class="pointer-events-none" viewBox="0 0 50 50">
-                        <rect x="5" y="15" width="40" height="30" fill="#B45309" rx="3"/>
-                        <rect x="7" y="17" width="36" height="26" fill="#1F2937" rx="1"/>
-                        <path d="M 25 20 L 25 40" stroke="#FBBF24" stroke-width="2"/>
-                    </svg>
-                </div>
-            </div>
-            
-            <!-- NEW: Gemini Hint Button -->
-            <button id="llm-hint-button" class="absolute bottom-4 right-4 bg-purple-700 text-white font-bold px-4 py-2 rounded-full shadow-lg hover:bg-purple-600 transition-colors">
-                Ask for a deeper hint ✨
-            </button>
-
-
-            <!-- Path to Trail -->
-            <div id="to-trail" class="interactive-item bg-gray-800 rounded-full p-3 shadow-md border-2 border-gray-600" style="bottom: 10%; left: 5%; width: 10%;">
-                <p class="text-xl text-cyan-300 text-center font-bold pointer-events-none">Trail</p>
-                <svg class="w-full pointer-events-none" viewBox="0 0 100 100" fill="#fff" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M50 10 L80 50 L50 90 L20 50 Z" fill="#3B82F6"/>
-                </svg>
-            </div>
-            
-            <!-- Path to Observatory - Locked -->
-            <div id="to-observatory-locked" class="interactive-item bg-gray-900 rounded-full p-3 shadow-md border-2 border-gray-700" style="bottom: 10%; right: 5%; width: 10%;">
-                <p class="text-xl text-red-400 text-center font-bold pointer-events-none">Dome (Locked)</p>
-                <svg class="w-full pointer-events-none" viewBox="0 0 100 100" fill="#fff" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M50 10 L80 50 L50 90 L20 50 Z" fill="#6B7280"/>
-                </svg>
-            </div>
-        </div>
-
-        <!-- ======== FOREST TRAIL (Scene 2) - Rune 1 Location ======== -->
-        <div id="scene-trail" class="scene night-sky">
-            <!-- Forest floor -->
-            <div class="absolute bottom-0 w-full h-1/4 bg-green-900 shadow-inner shadow-green-900/50"></div>
-            
-            <!-- Stylized Tree -->
-            <div class="absolute" style="bottom: 10%; left: 10%; width: 25%;">
-                <svg viewBox="0 0 100 200"><rect x="45" y="100" width="10" height="100" fill="#443322"/><path d="M 50 10 C 20 50, 80 50, 50 100 Z" fill="#14532D"/></svg>
-            </div>
-            
-            <!-- Rune 1 - Hidden in the tree -->
-            <div id="rune-1" class="interactive-item rune-glow" style="bottom: 50%; left: 18%; width: 8%;">
-                <p class="text-3xl text-cyan-300 font-extrabold text-center pointer-events-none">Rune 1</p>
-                <!-- SVG Constellation: The Lyre -->
-                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="pointer-events-none w-full h-full">
-                    <line x1="30" y1="20" x2="70" y2="20" stroke="#38BDF8" stroke-width="2"/>
-                    <line x1="70" y1="20" x2="80" y2="80" stroke="#38BDF8" stroke-width="2"/>
-                    <line x1="80" y1="80" x2="20" y2="80" stroke="#38BDF8" stroke-width="2"/>
-                    <line x1="20" y1="80" x2="30" y2="20" stroke="#38BDF8" stroke-width="2"/>
-                    <circle cx="50" cy="50" r="5" fill="#FBBF24"/>
-                </svg>
-            </div>
-
-            <!-- Path to Creek -->
-            <div id="to-creek" class="interactive-item bg-gray-800 rounded-full p-3 shadow-md border-2 border-gray-600" style="bottom: 10%; right: 5%; width: 10%;">
-                <p class="text-xl text-cyan-300 text-center font-bold pointer-events-none">Creek</p>
-                <svg class="w-full pointer-events-none" viewBox="0 0 100 100" fill="#fff" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M50 10 L80 50 L50 90 L20 50 Z" fill="#3B82F6"/>
-                </svg>
-            </div>
-            
-            <!-- Path back to Cabin -->
-            <div id="to-cabin-1" class="interactive-item bg-gray-800 rounded-full p-3 shadow-md border-2 border-gray-600" style="bottom: 10%; left: 5%; width: 10%;">
-                <p class="text-xl text-cyan-300 text-center font-bold pointer-events-none">Cabin</p>
-                <svg class="w-full pointer-events-none" viewBox="0 0 100 100" fill="#fff" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M50 10 L20 50 L50 90 L80 50 Z" fill="#3B82F6"/>
-                </svg>
-            </div>
-        </div>
-
-        <!-- ======== CREEK BED (Scene 3) - Rune 2 Location ======== -->
-        <div id="scene-creek" class="scene night-sky">
-            <!-- Creek Water -->
-            <div class="absolute bottom-0 w-full h-1/3 bg-blue-900 opacity-70" style="clip-path: polygon(0 30%, 100% 0, 100% 100%, 0 100%)"></div>
-            
-            <!-- Stones -->
-            <div id="stone-1" class="interactive-item bg-gray-500 rounded-full shadow-lg" style="bottom: 25%; left: 30%; width: 15%; height: 20%; z-index: 5;"></div>
-            <div id="stone-2-rune" class="interactive-item bg-gray-700 rounded-full shadow-2xl" style="bottom: 15%; left: 50%; width: 20%; height: 25%; z-index: 6;"></div>
-            <div id="stone-3" class="interactive-item bg-gray-500 rounded-full shadow-lg" style="bottom: 10%; left: 75%; width: 10%; height: 15%; z-index: 5;"></div>
-
-            <!-- Rune 2 (Initially hidden) -->
-            <div id="rune-2" class="interactive-item rune-glow" style="bottom: 15%; left: 55%; width: 10%; display: none; z-index: 7;">
-                <p class="text-3xl text-cyan-300 font-extrabold text-center pointer-events-none">Rune 2</p>
-                 <!-- SVG Constellation: The Big Dipper (Ursa Major) -->
-                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="pointer-events-none w-full h-full">
-                    <line x1="20" y1="20" x2="40" y2="20" stroke="#38BDF8" stroke-width="2"/>
-                    <line x1="40" y1="20" x2="40" y2="60" stroke="#38BDF8" stroke-width="2"/>
-                    <line x1="40" y1="60" x2="70" y2="60" stroke="#38BDF8" stroke-width="2"/>
-                    <line x1="70" y1="60" x2="80" y2="80" stroke="#38BDF8" stroke-width="2"/>
-                    <circle cx="50" cy="40" r="5" fill="#FBBF24"/>
-                </svg>
-            </div>
-            
-            <!-- Path back to Trail -->
-            <div id="to-trail-1" class="interactive-item bg-gray-800 rounded-full p-3 shadow-md border-2 border-gray-600" style="bottom: 10%; left: 5%; width: 10%;">
-                <p class="text-xl text-cyan-300 text-center font-bold pointer-events-none">Trail</p>
-                <svg class="w-full pointer-events-none" viewBox="0 0 100 100" fill="#fff" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M50 10 L20 50 L50 90 L80 50 Z" fill="#3B82F6"/>
-                </svg>
-            </div>
-        </div>
-        
-        <!-- ======== OBSERVATORY DOME (Scene 4) - Final Puzzle ======== -->
-        <div id="scene-observatory" class="scene night-sky">
-            
-            <!-- Observatory Dome -->
-            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-4/5 md:w-2/3 h-3/4 bg-gray-900 rounded-t-full border-t-8 border-cyan-400 shadow-2xl shadow-indigo-900/80">
-                <!-- Telescope base -->
-                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/4 h-1/2 bg-gray-700 rounded-t-lg"></div>
-                <!-- Telescope barrel -->
-                <div id="telescope" class="absolute top-1/4 left-1/2 -translate-x-1/2 w-1/6 h-2/3 bg-gray-500 rounded-full rotate-12 interactive-item transition-all duration-1000"></div>
-
-                <!-- Rune 3 - Visible but untouchable until final action -->
-                <div id="rune-3" class="absolute rune-glow" style="top: 10%; right: 10%; width: 10%;">
-                    <p class="text-3xl text-cyan-300 font-extrabold text-center pointer-events-none">Rune 3</p>
-                    <!-- SVG Constellation: Orion -->
-                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="pointer-events-none w-full h-full">
-                        <line x1="30" y1="10" x2="20" y2="40" stroke="#38BDF8" stroke-width="2"/>
-                        <line x1="70" y1="10" x2="80" y2="40" stroke="#38BDF8" stroke-width="2"/>
-                        <line x1="20" y1="40" x2="80" y2="40" stroke="#38BDF8" stroke-width="2"/>
-                        <line x1="40" y1="60" x2="60" y2="60" stroke="#38BDF8" stroke-width="2"/>
-                        <line x1="50" y1="40" x2="50" y2="90" stroke="#38BDF8" stroke-width="2"/>
-                        <circle cx="50" cy="50" r="5" fill="#FBBF24"/>
-                    </svg>
-                </div>
-            </div>
-
-            <!-- Rune Slots for puzzle -->
-            <div class="absolute top-10 left-10 p-4 bg-gray-900 rounded-lg border-2 border-cyan-400 shadow-xl" id="rune-slots">
-                <p class="text-xl font-bold text-yellow-300 mb-2">Rune Input (3/3 Required)</p>
-                <div class="flex space-x-2">
-                    <div id="slot-1" class="w-12 h-12 bg-gray-700 rounded flex items-center justify-center text-gray-500 border-dashed border-2 border-gray-500">?</div>
-                    <div id="slot-2" class="w-12 h-12 bg-gray-700 rounded flex items-center justify-center text-gray-500 border-dashed border-2 border-gray-500">?</div>
-                    <div id="slot-3" class="w-12 h-12 bg-gray-700 rounded flex items-center justify-center text-gray-500 border-dashed border-2 border-gray-500">?</div>
-                </div>
-                <button id="activate-telescope" class="mt-4 w-full bg-red-800 text-white font-bold py-2 rounded-lg hover:bg-red-700 transition-colors" disabled>
-                    ACTIVATE
-                </button>
-            </div>
-
-            <!-- Path back to Cabin -->
-            <div id="to-cabin-2" class="interactive-item bg-gray-800 rounded-full p-3 shadow-md border-2 border-gray-600" style="bottom: 10%; left: 5%; width: 10%;">
-                <p class="text-xl text-cyan-300 text-center font-bold pointer-events-none">Cabin</p>
-                <svg class="w-full pointer-events-none" viewBox="0 0 100 100" fill="#fff" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M50 10 L20 50 L50 90 L80 50 Z" fill="#3B82F6"/>
-                </svg>
-            </div>
-        </div>
-
-        <!-- ======== END SCREEN (Scene 5) - Success and Celebration ======== -->
-        <div id="scene-end" class="scene flex flex-col justify-center items-center text-center p-8 bg-gradient-to-br from-indigo-900 to-purple-900 star-field">
-            <h1 class="text-7xl md:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-red-500 drop-shadow-xl" style="letter-spacing: -4px;">
-                HAPPY BIRTHDAY!
-            </h1>
-            <p class="text-3xl md:text-5xl font-light text-cyan-300 mt-6 italic">
-                The stars align for you, Maya.
-            </p>
-            
-            <!-- Dynamic Birthday Message Placeholder -->
-            <div id="llm-birthday-message" class="mt-8 p-6 max-w-2xl bg-white/10 backdrop-blur-sm rounded-xl border-2 border-cyan-400 shadow-2xl">
-                <p id="message-placeholder" class="text-2xl md:text-3xl font-light text-cyan-200 italic">
-                    Awaiting transmission from the cosmos...
-                </p>
-            </div>
-            
-            <button id="restart-button" class="mt-12 bg-gradient-to-r from-teal-500 to-green-600 text-white font-bold text-xl px-8 py-4 rounded-xl shadow-2xl transform transition-transform hover:scale-110">
-                Play Again
-            </button>
-        </div>
-        
-        
-        <!-- ======== MESSAGE BOX (Overlay) - Clean and Teal-Accented ======== -->
-        <div id="message-box" class="absolute bottom-4 left-4 right-4 md:left-1/4 md:right-1/4 p-6 bg-white bg-opacity-95 rounded-xl shadow-xl border-4 border-cyan-500 text-slate-800 text-2xl md:text-3xl font-semibold text-center transition-all transform translate-y-full duration-500 z-50">
-            <span id="message-text">Welcome!</span>
-            <button id="close-message" class="absolute top-2 right-4 text-gray-500 hover:text-gray-900 text-4xl leading-none">&times;</button>
-        </div>
-
     </div>
 
-    <!-- 3. The Game Logic and Gemini API Integration -->
+    <!-- Hidden Audio Element -->
+    <audio id="story-audio" style="display: none;"></audio>
+
+    <!-- Win Modal -->
+    <div id="win-modal" class="hidden flex justify-center items-start pt-16 pb-16">
+        <div class="modal-content bg-white p-10 rounded-xl shadow-2xl max-w-xl w-full text-center border-8 border-amber-500">
+            <div class="flex justify-center mb-4">
+                <span class="modal-confetti text-amber-500">✨</span>
+                <span class="modal-confetti text-green-moss">💚</span>
+                <span class="modal-confetti text-red-barn">🎈</span>
+                <span class="modal-confetti text-blue-sky">💙</span>
+                <span class="modal-confetti text-purple-lavender">👑</span>
+                <span class="modal-confetti text-yellow-sun">🌟</span>
+                <span class="modal-confetti text-brown-saddle">🐴</span>
+            </div>
+            <h2 class="text-4xl font-black text-amber-600 mb-4">
+                <span class="block">YOU DID IT,</span> MAYA!
+            </h2>
+            <p class="text-xl text-gray-700 mb-6 font-bold" id="story-status">
+                Now, let's read your special story...
+                <span class="block text-sm text-gray-500 mt-2">
+                    (Generating a magical storybook page...)
+                </span>
+            </p>
+            
+            <!-- Story Container (Loading/Content) -->
+            <div id="story-container" class="bg-gray-50 p-6 rounded-lg text-left shadow-inner border border-gray-200">
+                <div id="story-loading" class="flex justify-center items-center py-8">
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Loading Maya's Great Cruiser Adventure...
+                </div>
+                <div id="story-content" class="hidden text-lg text-gray-800 leading-relaxed font-serif whitespace-pre-wrap"></div>
+            </div>
+
+            <div class="flex justify-center mt-8 space-x-4">
+                <button id="audio-button" class="px-6 py-3 bg-purple-600 text-white font-bold rounded-full shadow-lg hover:bg-purple-700 transition disabled:opacity-50 flex items-center" disabled>
+                    <svg id="audio-icon" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.121-9.193a8 8 0 010 11.314m-12.728-3.535a5 5 0 017.072 0m2.121 2.121a8 8 0 0111.314 0M4 12h4m-4 0v4m0-4v-4m16 4h-4m4 0v4m0-4v-4"></path></svg>
+                    <span id="audio-text">Read Story Aloud</span>
+                </button>
+                <button onclick="location.reload()" class="px-6 py-3 bg-amber-500 text-white font-bold rounded-full shadow-lg hover:opacity-90 transition">
+                    Park Them Again!
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            
-            // --- Gemini API Setup ---
-            const API_KEY = ""; // Kept empty for Canvas
-            const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=" + API_KEY;
-            
-            // --- Utility Functions ---
-            
-            /** Implements exponential backoff for API retries. */
-            async function fetchWithRetry(url, options, maxRetries = 5) {
-                for (let i = 0; i < maxRetries; i++) {
-                    try {
-                        const response = await fetch(url, options);
-                        if (response.status === 429) { // Rate limit
-                            throw new Error('Rate limited');
-                        }
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return await response.json();
-                    } catch (error) {
-                        if (i === maxRetries - 1) throw error;
-                        const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
-                        await new Promise(resolve => setTimeout(resolve, delay));
+        const vehicles = document.querySelectorAll('.vehicle');
+        const targets = document.querySelectorAll('.target');
+        const winModal = document.getElementById('win-modal');
+        const resetButton = document.getElementById('reset-button');
+        const storyStatus = document.getElementById('story-status');
+        const storyLoading = document.getElementById('story-loading');
+        const storyContent = document.getElementById('story-content');
+        const audioButton = document.getElementById('audio-button');
+        const storyAudio = document.getElementById('story-audio');
+        const audioIcon = document.getElementById('audio-icon');
+        const audioText = document.getElementById('audio-text');
+
+        const TOTAL_ITEMS = 6; 
+        const TEXT_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
+        const TTS_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent";
+        const API_KEY = ""; // Canvas provides this dynamically
+
+        let activeItem = null;
+        let isDragging = false;
+        let initialX, initialY, currentX, currentY, xOffset = 0, yOffset = 0;
+        let matchedCount = 0;
+
+        // --- Utility Functions for API and Audio ---
+
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        async function runWithExponentialBackoff(fn, maxRetries = 3) {
+            for (let attempt = 0; attempt < maxRetries; attempt++) {
+                try {
+                    return await fn();
+                } catch (error) {
+                    if (attempt === maxRetries - 1) {
+                        throw error;
                     }
+                    const delayTime = Math.pow(2, attempt) * 1000 + Math.random() * 500;
+                    console.warn(`Attempt ${attempt + 1} failed. Retrying in ${delayTime}ms...`);
+                    await delay(delayTime);
                 }
             }
-
-
-            // --- Audio Synths (using Tone.js) ---
-            const clickSound = new Tone.MembraneSynth({ octaves: 4, pitchDecay: 0.1 }).toDestination();
-            const runeFoundSound = new Tone.MetalSynth({ frequency: 1000, envelope: { attack: 0.001, decay: 0.2, sustain: 0.05, release: 0.1 }, harmonicity: 3.1, modulationIndex: 32, resonance: 4000, octaves: 1.5 }).toDestination();
-            const clueSound = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.1 } }).toDestination();
-            const successChord = new Tone.PolySynth(Tone.Synth, { envelope: { attack: 0.01, decay: 0.5, sustain: 0.3, release: 1 }, oscillator: { type: 'sine' } }).toDestination();
-            
-            // --- Game State ---
-            let currentState = 0; // 0: Title, 1: Cabin, 2: Trail, 3: Creek, 4: Observatory, 5: End
-            let runesCollected = []; // Stores IDs of collected runes: ['rune-1', 'rune-2', 'rune-3']
-            const TOTAL_RUNES = 3;
-
-            // --- DOM Elements ---
-            const scenes = [
-                document.getElementById('scene-title'),
-                document.getElementById('scene-cabin'),
-                document.getElementById('scene-trail'),
-                document.getElementById('scene-creek'),
-                document.getElementById('scene-observatory'),
-                document.getElementById('scene-end')
-            ];
-            const startButton = document.getElementById('start-button');
-            const restartButton = document.getElementById('restart-button');
-            const messageBox = document.getElementById('message-box');
-            const messageText = document.getElementById('message-text');
-            const closeMessageButton = document.getElementById('close-message');
-            
-            // Rune elements
-            const rune1 = document.getElementById('rune-1');
-            const rune2 = document.getElementById('rune-2');
-            const runeSlots = [document.getElementById('slot-1'), document.getElementById('slot-2'), document.getElementById('slot-3')];
-            const activateButton = document.getElementById('activate-telescope');
-            const telescope = document.getElementById('telescope');
-            const llmHintButton = document.getElementById('llm-hint-button');
-            const messagePlaceholder = document.getElementById('message-placeholder');
-
-
-            // --- Core Handlers ---
-            
-            function showMessage(text, sound = clickSound) {
-                messageText.textContent = text;
-                messageBox.classList.remove('translate-y-full');
-                messageBox.classList.add('translate-y-0');
-                if (sound && Tone.context.state !== 'running') { Tone.start(); }
-                if (sound) { sound.triggerAttackRelease('C4', '8n'); }
+        }
+        
+        // Converts base64 PCM data to a browser-playable WAV file Blob.
+        function base64ToArrayBuffer(base64) {
+            const binaryString = atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
             }
+            return bytes.buffer;
+        }
 
-            function hideMessage() {
-                messageBox.classList.remove('translate-y-0');
-                messageBox.classList.add('translate-y-full');
-            }
+        function pcmToWav(pcm16, sampleRate) {
+            const buffer = new ArrayBuffer(44 + pcm16.length * 2);
+            const view = new DataView(buffer);
+            let offset = 0;
 
-            function switchScene(nextState) {
-                scenes.forEach(scene => {
-                    scene.classList.remove('active-scene');
-                });
-                currentState = nextState;
-                scenes[currentState].classList.add('active-scene');
-                hideMessage();
-            }
-
-            function collectRune(runeElement, runeId) {
-                if (!runesCollected.includes(runeId)) {
-                    runeElement.style.pointerEvents = 'none'; 
-                    runeElement.classList.add('opacity-0'); 
-                    
-                    runesCollected.push(runeId);
-                    runeFoundSound.triggerAttackRelease(['G5', 'C6'], '4n');
-                    
-                    updateRuneSlots();
-                    
-                    if (runesCollected.length < TOTAL_RUNES) {
-                         showMessage(`You found a Rune (${runeId})! You need ${TOTAL_RUNES - runesCollected.length} more.`);
-                    } else if (runesCollected.length === TOTAL_RUNES) {
-                        showMessage("You have all three Runes! The Observatory path is unlocked. Proceed to activate the telescope.");
-                        // Enable the observatory path
-                        const obsLocked = document.getElementById('to-observatory-locked');
-                        if (obsLocked) {
-                            obsLocked.id = 'to-observatory';
-                            obsLocked.innerHTML = '<p class="text-xl text-yellow-300 text-center font-bold pointer-events-none">Dome (Unlocked)</p><svg class="w-full pointer-events-none" viewBox="0 0 100 100" fill="#fff" xmlns="http://www.w3.org/2000/svg"><path d="M50 10 L80 50 L50 90 L20 50 Z" fill="#10B981"/></svg>';
-                            document.getElementById('to-observatory').addEventListener('click', () => {
-                                switchScene(4); // Move to Observatory
-                                showMessage("The input panel is ready. Place the Runes into the slots.");
-                            });
-                        }
-                    }
-                } else {
-                    showMessage("You already collected that Rune.");
+            function writeString(s) {
+                for (let i = 0; i < s.length; i++) {
+                    view.setUint8(offset++, s.charCodeAt(i));
                 }
             }
-            
-            function updateRuneSlots() {
-                runesCollected.forEach((rune, index) => {
-                    runeSlots[index].textContent = '★';
-                    runeSlots[index].classList.remove('text-gray-500', 'border-dashed', 'border-gray-500');
-                    runeSlots[index].classList.add('text-yellow-400', 'border-solid', 'border-yellow-400', 'text-4xl');
-                });
-                
-                if (runesCollected.length === TOTAL_RUNES) {
-                    activateButton.disabled = false;
-                    activateButton.classList.remove('bg-red-800');
-                    activateButton.classList.add('bg-green-600', 'hover:bg-green-500');
-                }
+            function writeUint32(i) {
+                view.setUint32(offset, i, true);
+                offset += 4;
+            }
+            function writeUint16(i) {
+                view.setUint16(offset, i, true);
+                offset += 2;
             }
 
-
-            // --- GEMINI API Feature Functions ---
+            // RIFF chunk
+            writeString('RIFF');
+            writeUint32(36 + pcm16.length * 2); // ChunkSize
+            writeString('WAVE');
             
-            async function getLlmHint() {
-                llmHintButton.disabled = true;
-                llmHintButton.innerHTML = '<div class="loader inline-block mr-2"></div> Transmitting...';
-                
-                const runesMap = { 'rune-1': 'Lyre (Tallest Wood/Trail)', 'rune-2': 'Dipper (Deepest Stone/Creek)', 'rune-3': 'Orion (Highest Scope/Observatory)' };
-                const missingRunes = ['rune-1', 'rune-2', 'rune-3'].filter(r => !runesCollected.includes(r)).map(r => runesMap[r]);
-                
-                const userQuery = missingRunes.length === 0 
-                    ? "The user has all runes (Lyre, Dipper, Hunter). Tell them poetically to proceed to the Observatory dome and activate the final scope."
-                    : `The user needs the following runes: ${missingRunes.join(', ')}. Give a single, highly cryptic, and short poetic hint about the *next* location to search. Do not explicitly state the location or the rune name. Just hint at the location or the action needed next. Speak as a wise, ancient voice.`;
-                
-                const systemPrompt = "You are a celestial oracle providing cryptic, short, one-sentence hints for an astronomy puzzle game. Use rich, evocative language related to stars, cosmos, water, or wood. DO NOT use the words 'Rune', 'Lyre', 'Dipper', 'Orion', 'Trail', or 'Creek'.";
+            // FMT chunk
+            writeString('fmt ');
+            writeUint32(16); // Subchunk1Size
+            writeUint16(1);  // AudioFormat (1 is PCM)
+            writeUint16(1);  // NumChannels (Mono)
+            writeUint32(sampleRate);
+            writeUint32(sampleRate * 2); // ByteRate (SampleRate * NumChannels * BitsPerSample/8)
+            writeUint16(2);  // BlockAlign (NumChannels * BitsPerSample/8)
+            writeUint16(16); // BitsPerSample
+            
+            // DATA chunk
+            writeString('data');
+            writeUint32(pcm16.length * 2); // Subchunk2Size
 
-                const payload = {
-                    contents: [{ parts: [{ text: userQuery }] }],
-                    systemInstruction: { parts: [{ text: systemPrompt }] },
+            // Write PCM data (Int16)
+            for (let i = 0; i < pcm16.length; i++) {
+                view.setInt16(offset, pcm16[i], true);
+                offset += 2;
+            }
+
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+
+        // --- Game Logic Helpers ---
+
+        function getEventPoint(e) {
+            return e.changedTouches ? e.changedTouches[0] : e;
+        }
+
+        function setTranslate(xPos, yPos, el) {
+            el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
+        }
+
+        function getVehicleSvg(vehicleElement) {
+            return vehicleElement.querySelector('svg');
+        }
+
+        // --- Drag/Drop Handlers ---
+
+        function dragStart(e) {
+            activeItem = e.target.closest('.vehicle');
+            if (!activeItem || activeItem.classList.contains('matched')) return;
+            const point = getEventPoint(e);
+            e.preventDefault();
+            isDragging = true;
+            
+            const style = window.getComputedStyle(activeItem);
+            const matrix = new WebKitCSSMatrix(style.transform);
+            xOffset = matrix.m41;
+            yOffset = matrix.m42;
+
+            initialX = point.clientX - xOffset;
+            initialY = point.clientY - yOffset;
+            activeItem.style.zIndex = 1000;
+        }
+
+        function drag(e) {
+            if (!isDragging || !activeItem) return;
+            e.preventDefault();
+            const point = getEventPoint(e);
+            currentX = point.clientX - initialX;
+            currentY = point.clientY - initialY;
+            xOffset = currentX;
+            yOffset = currentY;
+            setTranslate(currentX, currentY, activeItem);
+        }
+
+        function dragEnd(e) {
+            if (!activeItem || !isDragging) return;
+            
+            isDragging = false;
+            activeItem.style.zIndex = 10; 
+            const vehicleRect = activeItem.getBoundingClientRect();
+            let isMatched = false;
+
+            targets.forEach(target => {
+                if (target.classList.contains('filled')) return;
+                const targetRect = target.getBoundingClientRect();
+                const vehicleCenter = {
+                    x: vehicleRect.left + vehicleRect.width / 2,
+                    y: vehicleRect.top + vehicleRect.height / 2
                 };
 
-                try {
-                    const result = await fetchWithRetry(API_URL, {
+                // Collision detection: check if vehicle center is inside target bounds
+                if (vehicleCenter.x > targetRect.left && vehicleCenter.x < targetRect.right &&
+                    vehicleCenter.y > targetRect.top && vehicleCenter.y < targetRect.bottom)
+                {
+                    // Match condition
+                    if (activeItem.dataset.vehicle === target.dataset.vehicle && activeItem.dataset.color === target.dataset.color) {
+                        isMatched = true;
+                        
+                        // Snap into place
+                        const targetCenterX = targetRect.left + targetRect.width / 2;
+                        const targetCenterY = targetRect.top + targetRect.height / 2;
+                        const finalX = targetCenterX - vehicleRect.width / 2 - vehicleRect.left + currentX;
+                        const finalY = targetCenterY - vehicleRect.height / 2 - vehicleRect.top + currentY;
+                        setTranslate(finalX, finalY, activeItem);
+
+                        // Update classes/display
+                        activeItem.classList.add('matched');
+                        activeItem.style.pointerEvents = 'none'; 
+                        target.classList.add('filled');
+                        
+                        const vehicleSvg = getVehicleSvg(activeItem);
+                        const clonedSvg = vehicleSvg.cloneNode(true);
+                        clonedSvg.classList.remove('svg-icon');
+                        clonedSvg.style.width = '100px';
+                        clonedSvg.style.height = '100px';
+                        
+                        target.innerHTML = '';
+                        target.appendChild(clonedSvg);
+
+                        matchedCount++;
+                        return;
+                    }
+                }
+            });
+
+            if (!isMatched) {
+                setTranslate(0, 0, activeItem); // Return to start
+            } else {
+                if (matchedCount === TOTAL_ITEMS) {
+                    setTimeout(showWinModal, 500);
+                }
+            }
+            
+            activeItem = null;
+            xOffset = 0;
+            yOffset = 0;
+        }
+
+        // --- Story Generation and TTS ---
+
+        async function generateStory() {
+            audioButton.disabled = true;
+            storyStatus.innerHTML = `Generating a magical storybook page...`;
+            storyLoading.classList.remove('hidden');
+            storyContent.classList.add('hidden');
+
+            const systemPrompt = "You are a cheerful, imaginative storyteller writing a very short, exciting story (3-4 paragraphs) for a four-year-old girl named Maya. The story must feature the six vehicles she just parked in her barn: a Moss Green Tractor, a Barn Red Truck, a Dusty Blue 4-Wheeler, a Lavender Carriage, a Saddle Brown Pony, and a Bright Yellow Boat. Use simple, direct language and focus on a fun adventure that involves all the vehicles. Do not include any HTML or markdown formatting in the story text. Just pure narrative.";
+            const userQuery = "Tell a brand new, exciting story about Maya's great adventure using all her parked cruisers.";
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+            
+            try {
+                const fetcher = async () => {
+                    const response = await fetch(`${TEXT_API_URL}?key=${API_KEY}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
 
-                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "The stars are silent right now. Try looking closer at your surroundings.";
-                    
-                    showMessage(text, clueSound);
+                    if (!response.ok) {
+                        const errorBody = await response.json();
+                        throw new Error(`API call failed: ${response.status} ${response.statusText}. Details: ${JSON.stringify(errorBody)}`);
+                    }
 
-                } catch (error) {
-                    console.error("Gemini Hint Error:", error);
-                    showMessage("The celestial connection is momentarily lost. The old stars refuse to speak.");
-                } finally {
-                    llmHintButton.disabled = false;
-                    llmHintButton.innerHTML = 'Ask for a deeper hint ✨';
-                }
-            }
-
-            async function generateBirthdayMessage() {
-                // Prevent double activation
-                activateButton.disabled = true;
-                activateButton.innerHTML = '<div class="loader inline-block mr-2"></div> Generating Message...';
-                
-                // Final visual change: Move the telescope and reveal the final Rune 3
-                telescope.style.transform = 'rotate(-10deg) scale(1.1)'; // Telescope moves
-                
-                const runeNames = ['Lyre', 'Dipper', 'Hunter (Orion)'];
-                
-                const userQuery = `Write a short, poetic, and heartfelt birthday message (no more than 50 words) for a person named Maya. The message must reference the following astronomical objects as the keys to her future: ${runeNames.join(', ')}. Start with: "From the High Scope, a message is transmitted:"`;
-                
-                const systemPrompt = "You are a cosmic poet and scribe. Generate a beautiful, inspirational, and concise birthday wish for Maya, focusing heavily on astronomical and celestial imagery. The message should be warm and magical. Include the referenced constellations subtly.";
-
-                const payload = {
-                    contents: [{ parts: [{ text: userQuery }] }],
-                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                    return response.json();
                 };
 
-                try {
-                    const result = await fetchWithRetry(API_URL, {
+                const result = await runWithExponentialBackoff(fetcher);
+                const text = result?.candidates?.[0]?.content?.parts?.[0]?.text || "Oh dear! The story got lost in the hay. Try parking them again!";
+
+                storyStatus.innerHTML = `Your special story is ready!`;
+                storyContent.innerText = text;
+                storyContent.classList.remove('hidden');
+                audioButton.disabled = false; // Enable TTS button
+                
+            } catch (e) {
+                console.error("Story generation failed:", e);
+                storyStatus.innerHTML = `Oh no! The story machine broke. <span class="text-red-500">(${e.message.substring(0, 50)}...)</span>`;
+                storyContent.innerText = "We couldn't generate the story right now. Maybe try again, smart girl!";
+                storyContent.classList.remove('hidden');
+            } finally {
+                storyLoading.classList.add('hidden');
+            }
+        }
+        
+        async function generateAndPlayTTS() {
+            const storyText = storyContent.innerText;
+            if (!storyText || audioButton.classList.contains('playing')) return;
+
+            // UI feedback for loading audio
+            audioButton.disabled = true;
+            audioButton.classList.add('playing');
+            audioText.textContent = 'Loading Audio...';
+
+            const payload = {
+                contents: [{ parts: [{ text: storyText }] }],
+                generationConfig: {
+                    responseModalities: ["AUDIO"],
+                    speechConfig: {
+                        voiceConfig: {
+                            prebuiltVoiceConfig: { voiceName: "Puck" } // Cheerful, Upbeat voice
+                        }
+                    }
+                },
+                model: "gemini-2.5-flash-preview-tts"
+            };
+
+            try {
+                const fetcher = async () => {
+                    const response = await fetch(`${TTS_API_URL}?key=${API_KEY}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
+                    
+                    if (!response.ok) {
+                        const errorBody = await response.json();
+                        throw new Error(`TTS API failed: ${response.status} ${response.statusText}. Details: ${JSON.stringify(errorBody)}`);
+                    }
+                    return response.json();
+                };
+                
+                const result = await runWithExponentialBackoff(fetcher);
+                const part = result?.candidates?.[0]?.content?.parts?.[0];
+                const audioData = part?.inlineData?.data;
+                const mimeType = part?.inlineData?.mimeType;
 
-                    const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text || "Happy Birthday, Maya! The universe sends its light to you.";
+                if (audioData && mimeType && mimeType.startsWith("audio/L16")) {
+                    const sampleRateMatch = mimeType.match(/rate=(\d+)/);
+                    const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 24000;
                     
-                    // Display the generated message on the end screen
-                    messagePlaceholder.textContent = generatedText;
+                    const pcmData = base64ToArrayBuffer(audioData);
+                    const pcm16 = new Int16Array(pcmData);
+                    const wavBlob = pcmToWav(pcm16, sampleRate);
                     
-                    successChord.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '1n');
-                    showMessage("Access granted! The telescope whirs to life...", successChord);
-                    
-                    // Move to End Screen after message is generated and telescope moves
-                    setTimeout(() => {
-                        switchScene(5);
-                    }, 2000);
+                    // Cleanup old URL if one exists
+                    if (storyAudio.src) { URL.revokeObjectURL(storyAudio.src); }
 
-                } catch (error) {
-                    console.error("Gemini Message Error:", error);
-                    showMessage("A solar flare has interrupted the final transmission! Try restarting the sequence.", successChord);
-                    activateButton.disabled = false;
-                    activateButton.innerHTML = 'ACTIVATE';
-                    telescope.style.transform = 'rotate(12deg)'; // Reset telescope angle
+                    const audioUrl = URL.createObjectURL(wavBlob);
+                    storyAudio.src = audioUrl;
+                    
+                    // UI feedback for playing
+                    audioText.textContent = 'Playing...';
+                    storyAudio.play();
+                } else {
+                    throw new Error("Invalid audio format received from API.");
+                }
+
+            } catch (e) {
+                console.error("TTS playback failed:", e);
+                audioText.textContent = 'Audio Failed!';
+            } finally {
+                // Re-enable button and reset text when audio ends or fails
+                storyAudio.onended = () => {
+                    audioButton.disabled = false;
+                    audioButton.classList.remove('playing');
+                    audioText.textContent = 'Read Story Aloud';
+                };
+                
+                if (storyAudio.paused) {
+                    audioButton.disabled = false;
+                    audioButton.classList.remove('playing');
+                    audioText.textContent = 'Read Story Aloud';
                 }
             }
+        }
 
-            // --- Event Listeners ---
 
-            startButton.addEventListener('click', () => {
-                switchScene(1); 
-                if (Tone.context.state !== 'running') { Tone.start(); }
-                showMessage("The stars are out, Maya. Find your sister for the first clue.");
-            });
-            
-            restartButton.addEventListener('click', () => {
-                // Reset game state and visuals (existing logic)
-                runesCollected = [];
-                rune1.classList.remove('opacity-0');
-                rune1.style.pointerEvents = 'auto';
-                rune2.style.display = 'none'; 
-                document.getElementById('stone-2-rune').style.pointerEvents = 'auto';
-                
-                // Reset Rune Slots
-                runeSlots.forEach(slot => {
-                    slot.textContent = '?';
-                    slot.className = 'w-12 h-12 bg-gray-700 rounded flex items-center justify-center text-gray-500 border-dashed border-2 border-gray-500';
-                });
-                activateButton.disabled = true;
-                activateButton.className = 'mt-4 w-full bg-red-800 text-white font-bold py-2 rounded-lg hover:bg-red-700 transition-colors';
-                activateButton.innerHTML = 'ACTIVATE'; // Reset button text
-                telescope.style.transform = 'rotate(12deg)'; // Reset telescope angle
-                messagePlaceholder.textContent = 'Awaiting transmission from the cosmos...'; // Reset end screen message
-                
-                // Reset observatory path
-                const obsPath = document.getElementById('to-observatory') || document.getElementById('to-observatory-locked');
-                if (obsPath.id === 'to-observatory') {
-                    // Note: In a true environment, we'd need to properly remove the event listener, but since we recreate the innerHTML, this usually suffices for simplicity.
-                    obsPath.id = 'to-observatory-locked';
-                    obsPath.innerHTML = '<p class="text-xl text-red-400 text-center font-bold pointer-events-none">Dome (Locked)</p><svg class="w-full pointer-events-none" viewBox="0 0 100 100" fill="#fff" xmlns="http://www.w3.org/2000/svg"><path d="M50 10 L80 50 L50 90 L20 50 Z" fill="#6B7280"/></svg>';
-                }
-                
-                switchScene(0);
+        function showWinModal() {
+            winModal.style.display = 'flex';
+            generateStory(); // Start story generation when modal is shown
+        }
+
+        function getTargetLabel(vehicle) {
+            switch(vehicle) {
+                case 'tractor': return 'TRACTOR';
+                case 'truck': return 'TRUCK';
+                case 'atv': return '4-WHEELER';
+                case 'carriage': return 'CARRIAGE';
+                case 'pony': return 'PONY';
+                case 'boat': return 'BOAT';
+                default: return '';
+            }
+        }
+
+        function resetGame() {
+            vehicles.forEach(v => {
+                v.classList.remove('matched');
+                v.style.pointerEvents = 'auto';
+                v.style.transform = '';
+                v.style.zIndex = 10;
             });
 
-            closeMessageButton.addEventListener('click', hideMessage);
+            targets.forEach(t => {
+                t.classList.remove('filled');
+                t.innerHTML = `<p class="text-gray-700 font-bold text-base text-center target-label">${getTargetLabel(t.dataset.vehicle)}</p>`;
+            });
             
-            // --- Scene 1 (Cabin) interactions ---
-            document.getElementById('sister-1-clue').addEventListener('click', () => {
-                showMessage("Your sister says: 'The first Rune hides in the **tallest** wood, the second under the **deepest** stone, and the third is the sight from the **highest** scope.'", clueSound);
-            });
-            llmHintButton.addEventListener('click', getLlmHint); // New LLM hint call
-            
-            document.getElementById('porch-light').addEventListener('click', () => {
-                showMessage("A warm light. It only seems to illuminate the porch.");
-            });
-            document.getElementById('book-clue').addEventListener('click', () => {
-                showMessage("It's a dusty old astronomy book. It says: *'The key to the final view is the Lyre, the Dipper, and the Hunter.'*");
-            });
-            document.getElementById('to-trail').addEventListener('click', () => {
-                switchScene(2); 
-                showMessage("The path is dark. Remember, the first Rune hides in the tallest wood.");
-            });
-            document.getElementById('to-observatory-locked').addEventListener('click', () => {
-                showMessage("The path to the Observatory is locked. You must find all three Runes first!");
-            });
+            // Stop and reset audio
+            storyAudio.pause();
+            storyAudio.src = '';
+            audioButton.disabled = true;
+            audioButton.classList.remove('playing');
+            audioText.textContent = 'Read Story Aloud';
 
-            // --- Scene 2 (Trail) interactions ---
-            rune1.addEventListener('click', (e) => collectRune(e.currentTarget, 'rune-1'));
-            document.getElementById('to-creek').addEventListener('click', () => {
-                switchScene(3);
-                showMessage("You reach the creek bed. Remember, the second Rune is under the deepest stone.");
-            });
-            document.getElementById('to-cabin-1').addEventListener('click', () => {
-                switchScene(1); 
-                showMessage("Back at the cabin porch.");
-            });
+            matchedCount = 0;
+            winModal.style.display = 'none';
+            // Reset story display
+            storyContent.classList.add('hidden');
+            storyContent.innerText = '';
+            storyLoading.classList.remove('hidden');
+            storyStatus.innerHTML = `Now, let's read your special story...
+                <span class="block text-sm text-gray-500 mt-2">
+                    (Generating a magical storybook page...)
+                </span>`;
+        }
 
-            // --- Scene 3 (Creek) interactions ---
-            document.getElementById('stone-1').addEventListener('click', () => {
-                showMessage("Just a cold, wet stone.");
-            });
-            document.getElementById('stone-3').addEventListener('click', () => {
-                showMessage("A small, smooth pebble.");
-            });
-            document.getElementById('stone-2-rune').addEventListener('click', (e) => {
-                e.currentTarget.style.pointerEvents = 'none';
-                rune2.style.display = 'block';
-                showMessage("You lift the largest stone. A celestial pattern is glowing beneath it!", runeFoundSound);
-            });
-            rune2.addEventListener('click', (e) => collectRune(e.currentTarget, 'rune-2'));
-            
-            document.getElementById('to-trail-1').addEventListener('click', () => {
-                switchScene(2);
-                showMessage("Back on the forest trail.");
-            });
-            
-            // --- Scene 4 (Observatory) interactions ---
-            document.getElementById('to-cabin-2').addEventListener('click', () => {
-                switchScene(1);
-                showMessage("Back at the cabin porch.");
-            });
-            
-            activateButton.addEventListener('click', () => {
-                if (runesCollected.length === TOTAL_RUNES) {
-                    generateBirthdayMessage(); // CALLS GEMINI API
-                } else {
-                    showMessage("The input is incomplete. You need all three Runes!", clickSound);
-                }
-            });
-            
+        // --- Event Listeners Setup ---
+
+        vehicles.forEach(vehicle => {
+            vehicle.addEventListener('mousedown', dragStart);
+            vehicle.addEventListener('touchstart', dragStart);
+            vehicle.style.position = 'relative';
         });
+        
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
+        document.addEventListener('touchmove', drag);
+        document.addEventListener('touchend', dragEnd);
+
+        resetButton.addEventListener('click', resetGame);
+        audioButton.addEventListener('click', generateAndPlayTTS);
+        
+        // Pause audio if the play button is clicked while audio is playing
+        storyAudio.addEventListener('playing', () => {
+            audioButton.classList.add('playing');
+            audioText.textContent = 'Playing... (Tap to Pause)';
+        });
+
+        // Handle button click for pause/play
+        audioButton.addEventListener('click', () => {
+            if (audioButton.classList.contains('playing')) {
+                storyAudio.pause();
+                audioButton.classList.remove('playing');
+                audioText.textContent = 'Paused (Tap to Resume)';
+            } else if (storyAudio.src) {
+                storyAudio.play();
+            } else {
+                // If clicked before the story is fully generated/loaded, call the function
+                generateAndPlayTTS();
+            }
+        });
+        
+        storyAudio.addEventListener('pause', () => {
+            audioButton.classList.remove('playing');
+            audioText.textContent = 'Paused (Tap to Resume)';
+        });
+
+        storyAudio.addEventListener('ended', () => {
+            audioButton.classList.remove('playing');
+            audioText.textContent = 'Read Story Aloud';
+        });
+
     </script>
 </body>
 </html>
