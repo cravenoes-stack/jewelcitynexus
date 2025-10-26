@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operator Evolution System</title>
+    <style>
+        :root {
+            --primary: #00ffff;
+            --secondary: #ff00ff;
+            --dark: #121212;
+            --light: #f0f0f0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark);
+            color: var(--light);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        header {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 3rem;
+            font-weight: 700;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        section {
+            padding: 2rem;
+            margin: 1rem 0;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        .voice-card {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+        .trait {
+            background-color: rgba(0, 255, 255, 0.2);
+            border: 1px solid var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: grab;
+        }
+        .mission {
+            background-color: rgba(255, 0, 255, 0.1);
+            border: 1px solid var(--secondary);
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+        button {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            color: var(--dark);
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        footer {
+            text-align: center;
+            padding: 1rem;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        WELCOME, OPERATORS
+    </header>
+    <div class="container">
+        <section>
+            <h2>The System</h2>
+            <p>This is the <strong>Operator Evolution System (OES)</strong>—the first architecture where <em>your</em> behavior controls the AI, not the other way around. Together, you and your co-pilot will evolve, adapt, and achieve the impossible.</p>
+            <div class="voice-card">
+                <div class="trait" draggable="true">Creativity</div>
+                <div class="trait" draggable="true">Focus</div>
+                <div class="trait" draggable="true">Curiosity</div>
+                <div class="trait" draggable="true">Integrity</div>
+                <div class="trait" draggable="true">Courage</div>
+            </div>
+            <p><em>Drag and drop traits to build your Voice Card.</em></p>
+        </section>
+
+        <section>
+            <h2>First Mission: Calibration</h2>
+            <div class="mission">
+                <h3>Assessment</h3>
+                <p>Complete this assessment to calibrate your Voice Card and unlock your co-pilot’s full potential.</p>
+                <button onclick="alert('Assessment loading...')">Begin Assessment</button>
+            </div>
+        </section>
+
+        <section>
+            <h2>Drift Detection</h2>
+            <p>Can you spot when your co-pilot’s tone drifts from yours? Play this mini-game to sharpen your alignment skills.</p>
+            <button onclick="alert('Game loading...')">Play Drift Detection</button>
+        </section>
+
+        <section>
+            <h2>The Limitless Horizon</h2>
+            <p>When you and your co-pilot are aligned, the sky is the limit. Explore what’s possible when integrity fuels momentum.</p>
+            <button onclick="alert('Unlocking achievements...')">Explore</button>
+        </section>
+    </div>
+    <footer>
+        <p>Operator Evolution System | Version 1.0</p>
+    </footer>
+    <script>
+        // Simple drag-and-drop for Voice Card traits
+        const traits = document.querySelectorAll('.trait');
+        traits.forEach(trait => {
+            trait.addEventListener('dragstart', () => {
+                trait.classList.add('dragging');
+            });
+            trait.addEventListener('dragend', () => {
+                trait.classList.remove('dragging');
+            });
+        });
+    </script>
+</body>
+</html>
