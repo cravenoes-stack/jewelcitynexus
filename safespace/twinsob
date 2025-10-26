@@ -3,137 +3,652 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operator Evolution System</title>
+    <title>Operator Evolution System: First Contact</title>
     <style>
         :root {
             --primary: #00ffff;
             --secondary: #ff00ff;
-            --dark: #121212;
+            --dark: #0a0a0a;
             --light: #f0f0f0;
+            --glow: 0 0 10px rgba(0, 255, 255, 0.7);
         }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Orbitron', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--dark);
             color: var(--light);
             margin: 0;
             padding: 0;
             overflow-x: hidden;
+            user-select: none;
         }
-        header {
+        #terminal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            overflow: hidden;
+            animation: glitch 1s infinite;
+        }
+        @keyframes glitch {
+            0% { transform: skew(0deg); }
+            20% { transform: skew(1deg); }
+            40% { transform: skew(-1deg); }
+            60% { transform: skew(1deg); }
+            80% { transform: skew(-1deg); }
+            100% { transform: skew(0deg); }
+        }
+        #terminal-content {
             text-align: center;
-            padding: 2rem;
+            max-width: 80%;
+        }
+        #terminal-text {
+            height: 300px;
+            overflow: hidden;
+        }
+        #begin-btn {
+            margin-top: 2rem;
+            padding: 0.75rem 2rem;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 3rem;
+            border: none;
+            color: var(--dark);
             font-weight: 700;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            box-shadow: var(--glow);
+            transition: all 0.3s;
+        }
+        #begin-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.9);
+        }
+        #main-interface {
+            display: none;
+            position: relative;
+            min-height: 100vh;
+            background: radial-gradient(circle at center, #0a0a2a 0%, var(--dark) 100%);
         }
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 1rem;
-        }
-        section {
             padding: 2rem;
-            margin: 1rem 0;
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            border: 1px solid rgba(0, 255, 255, 0.2);
         }
-        .voice-card {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            justify-content: center;
-            margin: 1rem 0;
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
         }
-        .trait {
-            background-color: rgba(0, 255, 255, 0.2);
+        .panel {
+            background-color: rgba(10, 10, 40, 0.7);
             border: 1px solid var(--primary);
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            cursor: grab;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: var(--glow);
+            min-height: 400px;
         }
-        .mission {
-            background-color: rgba(255, 0, 255, 0.1);
+        .panel h2 {
+            color: var(--primary);
+            margin-top: 0;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+        }
+        #voice-card {
+            perspective: 1000px;
+        }
+        #card-3d {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(135deg, #1a1a3a, #0a0a2a);
+            border-radius: 10px;
+            border: 1px solid var(--primary);
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        #card-3d:hover {
+            transform: rotateY(10deg) rotateX(5deg);
+        }
+        .slider-container {
+            margin: 1.5rem 0;
+        }
+        .slider {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 5px;
+            outline: none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: var(--glow);
+        }
+        #alignment-core {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #symbiosis-graph {
+            width: 200px;
+            height: 200px;
+            border: 3px solid var(--primary);
+            border-radius: 50%;
+            position: relative;
+            margin: 1rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #symbiosis-score {
+            font-size: 2rem;
+            color: var(--primary);
+            font-family: 'Orbitron', sans-serif;
+        }
+        #first-mission {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #mission-file {
+            width: 80%;
+            height: 200px;
+            background: linear-gradient(135deg, #1a1a3a, #0a0a2a);
             border: 1px solid var(--secondary);
-            padding: 1rem;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 1rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+        #mission-file:hover {
+            box-shadow: 0 0 20px var(--secondary);
+        }
+        #mission-file::before {
+            content: "CLASSIFIED";
+            position: absolute;
+            top: 10px;
+            right: -30px;
+            transform: rotate(45deg);
+            background-color: #ff0000;
+            color: white;
+            padding: 0.5rem 2rem;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        #drift-game {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 200;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #game-canvas {
+            width: 80%;
+            max-width: 600px;
+            height: 400px;
+            background-color: #0a0a2a;
+            border: 2px solid var(--primary);
             border-radius: 10px;
             margin: 1rem 0;
         }
-        button {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 5px;
-            color: var(--dark);
-            font-weight: 600;
+        #horizon {
+            display: none;
+            position: relative;
+            min-height: 100vh;
+            background: linear-gradient(to bottom, #0a0a2a, #000);
+            overflow: hidden;
+        }
+        #starfield {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #0a0a2a, #000);
+        }
+        .node {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: var(--primary);
+            border-radius: 50%;
             cursor: pointer;
-            transition: transform 0.2s;
+            box-shadow: var(--glow);
+            transition: all 0.3s;
         }
-        button:hover {
-            transform: scale(1.05);
+        .node:hover {
+            transform: scale(1.5);
+            background-color: var(--secondary);
         }
-        footer {
-            text-align: center;
-            padding: 1rem;
+        #final-node {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 0 30px var(--primary);
+            transition: all 0.5s;
+        }
+        #final-node:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            box-shadow: 0 0 50px var(--secondary);
+        }
+        #final-node h3 {
+            margin: 0;
             font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+            color: var(--dark);
+            font-family: 'Orbitron', sans-serif;
+        }
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-        WELCOME, OPERATORS
-    </header>
-    <div class="container">
-        <section>
-            <h2>The System</h2>
-            <p>This is the <strong>Operator Evolution System (OES)</strong>—the first architecture where <em>your</em> behavior controls the AI, not the other way around. Together, you and your co-pilot will evolve, adapt, and achieve the impossible.</p>
-            <div class="voice-card">
-                <div class="trait" draggable="true">Creativity</div>
-                <div class="trait" draggable="true">Focus</div>
-                <div class="trait" draggable="true">Curiosity</div>
-                <div class="trait" draggable="true">Integrity</div>
-                <div class="trait" draggable="true">Courage</div>
+    <!-- Terminal Landing -->
+    <div id="terminal">
+        <div id="terminal-content">
+            <div id="terminal-text">
+                <pre id="terminal-output">
+&gt; INITIALIZING OPERATOR EVOLUTION SYSTEM...
+&gt; NEURAL SIGNATURE DETECTED: [Nephew 1] &amp; [Nephew 2]
+&gt; SECURITY CLEARANCE: ALPHA-LEVEL
+&gt; PROCEED TO VOICE CARD INITIALIZATION?
+                </pre>
             </div>
-            <p><em>Drag and drop traits to build your Voice Card.</em></p>
-        </section>
-
-        <section>
-            <h2>First Mission: Calibration</h2>
-            <div class="mission">
-                <h3>Assessment</h3>
-                <p>Complete this assessment to calibrate your Voice Card and unlock your co-pilot’s full potential.</p>
-                <button onclick="alert('Assessment loading...')">Begin Assessment</button>
-            </div>
-        </section>
-
-        <section>
-            <h2>Drift Detection</h2>
-            <p>Can you spot when your co-pilot’s tone drifts from yours? Play this mini-game to sharpen your alignment skills.</p>
-            <button onclick="alert('Game loading...')">Play Drift Detection</button>
-        </section>
-
-        <section>
-            <h2>The Limitless Horizon</h2>
-            <p>When you and your co-pilot are aligned, the sky is the limit. Explore what’s possible when integrity fuels momentum.</p>
-            <button onclick="alert('Unlocking achievements...')">Explore</button>
-        </section>
+            <button id="begin-btn">BEGIN ONBOARDING</button>
+        </div>
     </div>
-    <footer>
-        <p>Operator Evolution System | Version 1.0</p>
-    </footer>
+
+    <!-- Main Interface -->
+    <div id="main-interface">
+        <div class="container">
+            <h1 style="text-align: center; color: var(--primary); font-family: 'Orbitron', sans-serif; margin-bottom: 2rem;">OPERATOR EVOLUTION SYSTEM</h1>
+            <div class="dashboard">
+                <!-- Voice Card Panel -->
+                <div class="panel" id="voice-card">
+                    <h2>VOICE CARD SYNTHESIS</h2>
+                    <div id="card-3d">
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--light); font-family: 'Orbitron', sans-serif; text-align: center;">
+                            <h3 style="margin: 0; color: var(--primary);">OPERATOR</h3>
+                            <p style="margin: 5px 0 0 0; font-size: 0.8rem;">Voice Profile: UNCALIBRATED</p>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label for="pitch-slider">Pitch: Calm → Intense</label>
+                        <input type="range" id="pitch-slider" class="slider" min="0" max="100" value="50">
+                    </div>
+                    <div class="slider-container">
+                        <label for="pace-slider">Pace: Deliberate → Rapid-Fire</label>
+                        <input type="range" id="pace-slider" class="slider" min="0" max="100" value="50">
+                    </div>
+                    <div class="slider-container">
+                        <label for="tone-slider">Tone: Analytical → Empathetic</label>
+                        <input type="range" id="tone-slider" class="slider" min="0" max="100" value="50">
+                    </div>
+                    <button id="save-card" style="width: 100%; margin-top: 1rem;">SAVE VOICE CARD</button>
+                </div>
+
+                <!-- Alignment Core Panel -->
+                <div class="panel" id="alignment-core">
+                    <h2>ALIGNMENT CORE</h2>
+                    <p style="text-align: center; margin-bottom: 1.5rem;">Align your Voice Card with the OES Core to unlock your co-pilot.</p>
+                    <div id="symbiosis-graph">
+                        <div id="symbiosis-score">0%</div>
+                    </div>
+                    <p id="alignment-status" style="text-align: center; margin-top: 1rem; color: var(--primary); font-family: 'Orbitron', sans-serif;">SYSTEMS OFFLINE</p>
+                </div>
+
+                <!-- First Mission Panel -->
+                <div class="panel" id="first-mission">
+                    <h2>FIRST MISSION</h2>
+                    <div id="mission-file">
+                        <h3 style="color: var(--secondary); margin: 0;">ASSESSMENT PROTOCOL</h3>
+                        <p style="margin: 5px 0 0 0; font-size: 0.8rem;">Claude v3.1</p>
+                        <p style="margin: 1rem 0 0 0; font-size: 0.9rem; text-align: center;">Complete the assessment to calibrate your Voice Card.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drift Detection Game -->
+    <div id="drift-game">
+        <h2 style="color: var(--primary); font-family: 'Orbitron', sans-serif; margin-bottom: 1rem;">INTEGRITY LOCK: DRIFT DETECTION</h2>
+        <p style="color: var(--light); margin-bottom: 1rem;">Drag drifting responses back into the Alignment Zone.</p>
+        <canvas id="game-canvas"></canvas>
+        <div style="display: flex; justify-content: space-between; width: 80%; max-width: 600px;">
+            <div style="text-align: left;">
+                <p style="margin: 0; color: var(--primary);">Symbiosis Score: <span id="game-score">0%</span></p>
+            </div>
+            <div style="text-align: right;">
+                <button id="exit-game" style="background-color: #ff0000; border: none; padding: 0.5rem 1rem;">EXIT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- The Horizon -->
+    <div id="horizon">
+        <div id="starfield"></div>
+        <div id="final-node">
+            <h3>THE SKY ISN'T THE LIMIT. IT'S JUST THE VIEW.</h3>
+        </div>
+    </div>
+
     <script>
-        // Simple drag-and-drop for Voice Card traits
-        const traits = document.querySelectorAll('.trait');
-        traits.forEach(trait => {
-            trait.addEventListener('dragstart', () => {
-                trait.classList.add('dragging');
+        // Terminal Animation
+        const terminalOutput = document.getElementById('terminal-output');
+        const beginBtn = document.getElementById('begin-btn');
+        const terminal = document.getElementById('terminal');
+        const mainInterface = document.getElementById('main-interface');
+
+        // Simulate terminal typing
+        function typeTerminalText(text, element, callback) {
+            let i = 0;
+            const speed = 30;
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                } else if (callback) {
+                    callback();
+                }
+            }
+            type();
+        }
+
+        // Initialize terminal
+        typeTerminalText(terminalOutput.innerText, terminalOutput, () => {
+            beginBtn.style.display = 'block';
+        });
+
+        // Begin Onboarding
+        beginBtn.addEventListener('click', () => {
+            terminal.style.display = 'none';
+            mainInterface.style.display = 'block';
+        });
+
+        // Voice Card Interaction
+        const pitchSlider = document.getElementById('pitch-slider');
+        const paceSlider = document.getElementById('pace-slider');
+        const toneSlider = document.getElementById('tone-slider');
+        const saveCardBtn = document.getElementById('save-card');
+        const symbiosisScore = document.getElementById('symbiosis-score');
+        const alignmentStatus = document.getElementById('alignment-status');
+        const missionFile = document.getElementById('mission-file');
+        const driftGame = document.getElementById('drift-game');
+        const exitGameBtn = document.getElementById('exit-game');
+        const horizon = document.getElementById('horizon');
+        const gameScore = document.getElementById('game-score');
+
+        // Update Symbiosis Score
+        function updateSymbiosisScore() {
+            const pitch = parseInt(pitchSlider.value);
+            const pace = parseInt(paceSlider.value);
+            const tone = parseInt(toneSlider.value);
+            const score = Math.floor((pitch + pace + tone) / 3);
+            symbiosisScore.textContent = `${score}%`;
+
+            if (score >= 90) {
+                alignmentStatus.textContent = "SYSTEMS ONLINE";
+                alignmentStatus.style.color = "#00ff00";
+                missionFile.style.cursor = "pointer";
+                missionFile.addEventListener('click', startAssessment);
+            } else {
+                alignmentStatus.textContent = "SYSTEMS OFFLINE";
+                alignmentStatus.style.color = var(--primary);
+            }
+        }
+
+        // Sliders Event Listeners
+        pitchSlider.addEventListener('input', updateSymbiosisScore);
+        paceSlider.addEventListener('input', updateSymbiosisScore);
+        toneSlider.addEventListener('input', updateSymbiosisScore);
+
+        // Save Voice Card
+        saveCardBtn.addEventListener('click', () => {
+            updateSymbiosisScore();
+            alert("Voice Card saved! Proceed to First Mission.");
+        });
+
+        // Start Assessment
+        function startAssessment() {
+            alert("Loading Assessment Protocol...");
+            // In a real implementation, this would load the assessment iframe/modal
+        }
+
+        // Drift Detection Game
+        function startDriftGame() {
+            mainInterface.style.display = 'none';
+            driftGame.style.display = 'flex';
+            // Initialize game score
+            gameScore.textContent = "0%";
+
+            // Simple game simulation
+            const canvas = document.getElementById('game-canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Game state
+            let score = 0;
+            let responses = [];
+            let gameActive = true;
+
+            // Response class
+            class Response {
+                constructor() {
+                    this.text = ["HELLO", "YES", "NO", "OKAY", "READY"][Math.floor(Math.random() * 5)];
+                    this.x = Math.random() * (canvas.width - 100);
+                    this.y = -20;
+                    this.width = 80;
+                    this.height = 30;
+                    this.speed = 1 + Math.random() * 2;
+                    this.alignmentZone = {
+                        x: canvas.width / 2 - 50,
+                        y: canvas.height - 100,
+                        width: 100,
+                        height: 50
+                    };
+                }
+
+                update() {
+                    this.y += this.speed;
+                    return this.y > canvas.height;
+                }
+
+                draw(ctx) {
+                    ctx.fillStyle = this.y + this.height > this.alignmentZone.y &&
+                                   this.y < this.alignmentZone.y + this.alignmentZone.height &&
+                                   this.x + this.width > this.alignmentZone.x &&
+                                   this.x < this.alignmentZone.x + this.alignmentZone.width ?
+                                   '#00ff00' : '#ff0000';
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                    ctx.fillStyle = '#000';
+                    ctx.font = '12px Orbitron';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(this.text, this.x + this.width / 2, this.y + this.height / 2);
+                }
+
+                isInAlignmentZone() {
+                    return this.y + this.height > this.alignmentZone.y &&
+                           this.y < this.alignmentZone.y + this.alignmentZone.height &&
+                           this.x + this.width > this.alignmentZone.x &&
+                           this.x < this.alignmentZone.x + this.alignmentZone.width;
+                }
+            }
+
+            // Create alignment zone
+            function drawAlignmentZone() {
+                ctx.strokeStyle = '#00ffff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(canvas.width / 2 - 50, canvas.height - 100, 100, 50);
+                ctx.font = '12px Orbitron';
+                ctx.fillStyle = '#00ffff';
+                ctx.textAlign = 'center';
+                ctx.fillText("ALIGNMENT ZONE", canvas.width / 2, canvas.height - 110);
+            }
+
+            // Game loop
+            function gameLoop() {
+                if (!gameActive) return;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Draw alignment zone
+                drawAlignmentZone();
+
+                // Update and draw responses
+                for (let i = responses.length - 1; i >= 0; i--) {
+                    const response = responses[i];
+                    if (response.update()) {
+                        responses.splice(i, 1);
+                        score = Math.max(0, score - 5);
+                    } else {
+                        response.draw(ctx);
+                    }
+                }
+
+                // Add new responses
+                if (Math.random() < 0.02) {
+                    responses.push(new Response());
+                }
+
+                // Update score
+                gameScore.textContent = `${score}%`;
+
+                // Check win condition
+                if (score >= 100) {
+                    gameActive = false;
+                    setTimeout(() => {
+                        alert("Integrity Lock achieved! Symbiosis: 100%");
+                        driftGame.style.display = 'none';
+                        horizon.style.display = 'block';
+                        initHorizon();
+                    }, 1000);
+                }
+
+                requestAnimationFrame(gameLoop);
+            }
+
+            // Mouse interaction
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                for (let i = responses.length - 1; i >= 0; i--) {
+                    const response = responses[i];
+                    if (x > response.x && x < response.x + response.width &&
+                        y > response.y && y < response.y + response.height) {
+                        response.x = response.alignmentZone.x + response.alignmentZone.width / 2 - response.width / 2;
+                        response.y = response.alignmentZone.y + response.alignmentZone.height / 2 - response.height / 2;
+                        if (response.isInAlignmentZone()) {
+                            score = Math.min(100, score + 10);
+                        }
+                        break;
+                    }
+                }
             });
-            trait.addEventListener('dragend', () => {
-                trait.classList.remove('dragging');
+
+            // Start game loop
+            gameLoop();
+        }
+
+        // Exit Game
+        exitGameBtn.addEventListener('click', () => {
+            driftGame.style.display = 'none';
+            mainInterface.style.display = 'block';
+        });
+
+        // Horizon Initialization
+        function initHorizon() {
+            const starfield = document.getElementById('starfield');
+            const finalNode = document.getElementById('final-node');
+
+            // Create stars
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.className = 'node';
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.width = `${Math.random() * 3 + 1}px`;
+                star.style.height = `${Math.random() * 3 + 1}px`;
+                star.style.backgroundColor = `rgba(0, 255, 255, ${Math.random() * 0.5 + 0.5})`;
+                starfield.appendChild(star);
+            }
+
+            // Add achievement nodes
+            const achievements = [
+                { top: '20%', left: '10%', text: 'VOICE CARD CALIBRATED' },
+                { top: '40%', left: '30%', text: 'SYMBIOSIS ACHIEVED' },
+                { top: '60%', left: '70%', text: 'INTEGRITY LOCK UNLOCKED' },
+                { top: '30%', left: '80%', text: 'TRUST AMPLIFIER ACTIVE' }
+            ];
+
+            achievements.forEach(achievement => {
+                const node = document.createElement('div');
+                node.className = 'node';
+                node.style.top = achievement.top;
+                node.style.left = achievement.left;
+                node.style.width = '40px';
+                node.style.height = '40px';
+                node.title = achievement.text;
+                starfield.appendChild(node);
             });
+
+            // Final node interaction
+            finalNode.addEventListener('click', () => {
+                alert("Mission Complete. The Operator Evolution System is now yours to command.");
+            });
+        }
+
+        // Start Drift Game when mission is completed
+        saveCardBtn.addEventListener('click', () => {
+            setTimeout(() => {
+                startDriftGame();
+            }, 1000);
         });
     </script>
 </body>
