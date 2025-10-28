@@ -2,63 +2,205 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Jewel City Nexus</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+        :root{
+            --bg-1: #071021; /* deep navy */
+            --bg-2: #0f1724; /* slightly lighter */
+            --accent: #7c3aed; /* violet accent */
+            --accent-2: #06b6d4; /* cyan accent */
+            --card: #0f1724;
+            --muted: #94a3b8;
+            --glass: rgba(255,255,255,0.04);
+        }
+
+        html,body{height:100%;}
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0d1117;
+            background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
             color: #c9d1d9;
+            margin:0;
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
         }
 
-        .chat-container {
-            height: calc(100vh - 120px);
-            overflow-y: auto;
-            scroll-behavior: smooth;
+        /* Subtle animated starfield for a premium landing feel */
+        .stars {
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px);
+            background-size: 100px 100px, 200px 200px;
+            background-position: 0 0, 50px 50px;
+            opacity: 0.6;
+            pointer-events: none;
+            animation: drift 60s linear infinite;
+            z-index:0;
+        }
+        @keyframes drift{from{transform:translateY(0)}to{transform:translateY(-200px)}}
+
+        /* Landing area */
+        #landing {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 24px;
+            z-index:1;
         }
 
-        /* Custom scrollbar for webkit browsers */
-        .chat-container::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .chat-container::-webkit-scrollbar-track {
-            background: #161b22;
-        }
-
-        .chat-container::-webkit-scrollbar-thumb {
-            background-color: #30363d;
-            border-radius: 4px;
-        }
-
-        .message-bubble {
-            max-width: 80%;
-            padding: 12px;
+        .landing-card {
+            width: 100%;
+            max-width: 1100px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.02), transparent);
+            border: 1px solid rgba(255,255,255,0.03);
+            box-shadow: 0 10px 30px rgba(2,6,23,0.7);
             border-radius: 16px;
-            margin-bottom: 12px;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 24px;
+            padding: 28px;
+            align-items: stretch;
+            backdrop-filter: blur(6px) saturate(120%);
         }
+
+        .landing-left{
+            padding: 12px 8px;
+        }
+
+        .brand {
+            display:flex;
+            gap:12px;
+            align-items:center;
+            margin-bottom:8px;
+        }
+        .logo {
+            width:56px;
+            height:56px;
+            border-radius:12px;
+            background:linear-gradient(135deg,var(--accent),var(--accent-2));
+            display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:20px;
+            box-shadow:0 6px 18px rgba(124,58,237,0.18), inset 0 -6px 18px rgba(0,0,0,0.2);
+        }
+
+        h1{
+            font-size:28px;margin:6px 0 8px 0;line-height:1.05;font-weight:700;color:linear-gradient(90deg,#fff,#cbd5e1);
+        }
+        .tagline{color:var(--muted);margin-bottom:18px;font-size:14px}
+
+        .cta-row{display:flex;gap:12px;align-items:center}
+        .btn{padding:10px 18px;border-radius:999px;font-weight:600;border:0;cursor:pointer}
+        .btn-primary{background:linear-gradient(90deg,var(--accent),#4f46e5);color:white;box-shadow:0 6px 18px rgba(79,70,229,0.12)}
+        .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+
+        .supporting{margin-top:16px;color:var(--muted);font-size:13px}
+
+        /* Right column holds the landing iframe / preview and login placeholder */
+        .landing-right{display:flex;flex-direction:column;gap:12px;align-items:stretch}
+        .landing-preview{height:320px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.03);background:var(--card)}
+        .landing-preview iframe{width:100%;height:100%;border:0;display:block}
+
+        .login-placeholder{background:var(--glass);border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.02);display:flex;flex-direction:column;gap:8px;align-items:stretch}
+        .login-placeholder .muted{color:var(--muted);font-size:13px}
+        .login-row{display:flex;gap:8px}
+
+        /* App container (hidden until enter) */
+        #app-container{display:none;flex-direction:column;min-height:100vh;padding:28px}
+
+        /* Responsive adjustments */
+        @media (max-width: 1024px){
+            .landing-card{grid-template-columns:1fr;}
+            .landing-right{order:-1}
+            .landing-preview{height:300px}
+        }
+
+        @media (max-width: 480px){
+            .landing-card{padding:18px;gap:12px}
+            h1{font-size:22px}
+            .logo{width:48px;height:48px}
+            .landing-preview{height:220px}
+        }
+
+        /* Message bubbles retained from original */
+        .chat-container {height: calc(100vh - 220px);overflow-y: auto;scroll-behavior: smooth;}
+        .message-bubble {max-width: 80%;padding: 12px;border-radius: 16px;margin-bottom: 12px;}
     </style>
 </head>
 
-<body class="p-6 flex flex-col h-screen">
-    <div class="flex-grow flex flex-col bg-[#0d1117] rounded-3xl p-4">
-        <h1 class="text-3xl font-bold mb-4 text-center">Jewel City Nexus</h1>
-        <div id="auth-status" class="text-center text-sm mb-4">Authenticating...</div>
-        <div id="messages" class="chat-container flex flex-col flex-grow bg-[#161b22] p-4 rounded-xl shadow-lg">
+<body>
+    <div class="stars" aria-hidden="true"></div>
+
+    <!-- LANDING -->
+    <main id="landing" role="main">
+        <section class="landing-card" aria-label="Landing card">
+            <div class="landing-left">
+                <div class="brand">
+                    <div class="logo">JC</div>
+                    <div>
+                        <div style="font-weight:700;color:#fff">Jewel City Nexus</div>
+                        <div style="font-size:12px;color:var(--muted);margin-top:2px">Prime Directive: Architect for sustainable planetary-scale growth</div>
+                    </div>
+                </div>
+
+                <h1>Where Operator & Artifact converge — A new foundation</h1>
+                <p class="tagline">Explore the living landing artifact below. Sign in to continue into the Nexus and collaborate with the system's co-pilots.</p>
+
+                <div class="cta-row">
+                    <button id="enter-app-button" class="btn btn-primary">Enter the Nexus</button>
+                    <button id="preview-new-tab" class="btn btn-ghost">Open artifact in new tab</button>
+                </div>
+
+                <p class="supporting">This landing artifact is the doorway — it intentionally defers heavy initialization until you step inside. The app will initialize authentication and realtime listeners after you enter.</p>
+            </div>
+
+            <aside class="landing-right">
+                <div class="landing-preview" aria-label="Landing artifact preview">
+                    <iframe src="https://claude.site/public/artifacts/ec8a8bf6-fe68-4e5d-abcf-d9459babd6c3/embed" title="Claude Artifact - Landing" allow="clipboard-write" allowfullscreen loading="lazy"></iframe>
+                </div>
+
+                <div class="login-placeholder" aria-live="polite">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <div>
+                            <div style="font-weight:600">Sign in to persist your session</div>
+                            <div class="muted">Sign in is required to message the Nexus and join shared sessions.</div>
+                        </div>
+                        <div style="display:flex;flex-direction:column;align-items:flex-end">
+                            <button id="open-signin" class="btn btn-primary" style="padding:8px 12px;font-size:13px">Sign in</button>
+                            <button id="continue-guest" class="btn btn-ghost" style="margin-top:8px;padding:8px 12px;font-size:13px">Continue as guest</button>
+                        </div>
+                    </div>
+                </div>
+
+            </aside>
+        </section>
+
+        <div style="max-width:1100px;margin:18px auto 0;color:var(--muted);font-size:13px;text-align:center">Built on the shoulders of the mini GPT lineage — engineered to scale without breaking. Welcome.</div>
+    </main>
+
+    <!-- MAIN APP (hidden until user enters) -->
+    <div id="app-container" class="flex-grow flex flex-col bg-[#0d1117] rounded-3xl">
+        <div style="padding:24px;display:flex;align-items:center;justify-content:space-between">
+            <h2 style="font-size:20px;font-weight:700">Jewel City Nexus</h2>
+            <div style="display:flex;gap:12px">
+                <button id="insert-claude-button" class="btn btn-ghost">Insert Claude Artifact</button>
+            </div>
+        </div>
+
+        <div id="auth-status" style="text-align:center;color:var(--muted);padding-bottom:8px">Authenticating...</div>
+
+        <div id="messages" class="chat-container flex flex-col flex-grow bg-[#0b1116] p-4 rounded-xl shadow-lg" style="margin:0 24px 24px 24px">
             <!-- Messages will be injected here -->
         </div>
-        <div id="typing-indicator" class="mt-2 text-sm text-gray-500 hidden">Gemini is thinking...</div>
 
-        <form id="message-form" class="mt-4 flex items-center bg-[#161b22] rounded-full p-2 shadow-lg">
-            <input type="text" id="message-input"
-                class="flex-grow bg-[#161b22] text-white outline-none placeholder-gray-500 px-4 py-2 rounded-full"
-                placeholder="Message the Nexus...">
-            <button type="submit"
-                class="bg-[#238636] text-white px-6 py-3 rounded-full ml-2 font-semibold hover:bg-[#2ea043] transition-colors">Send</button>
+        <form id="message-form" class="mt-4 flex items-center bg-[#0b1116] rounded-full p-2 shadow-lg" style="margin:0 24px 24px 24px">
+            <input type="text" id="message-input" class="flex-grow bg-transparent text-white outline-none placeholder-gray-500 px-4 py-2 rounded-full" placeholder="Message the Nexus...">
+            <button type="submit" class="btn btn-primary">Send</button>
         </form>
     </div>
 
@@ -66,8 +208,7 @@
     <div id="modal-container" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4">
         <div class="bg-[#161b22] p-8 rounded-lg shadow-xl max-w-sm w-full text-center">
             <p id="modal-message" class="text-white mb-6 text-lg"></p>
-            <button id="modal-ok-button"
-                class="bg-[#238636] text-white px-6 py-2 rounded-full font-semibold hover:bg-[#2ea043] transition-colors">OK</button>
+            <button id="modal-ok-button" class="bg-[#238636] text-white px-6 py-2 rounded-full font-semibold hover:bg-[#2ea043] transition-colors">OK</button>
         </div>
     </div>
 
@@ -75,7 +216,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Global variables provided by the environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -90,23 +231,16 @@
         const messageForm = document.getElementById('message-form');
         const messageInput = document.getElementById('message-input');
         const authStatus = document.getElementById('auth-status');
-        const typingIndicator = document.getElementById('typing-indicator');
-
         const modalContainer = document.getElementById('modal-container');
         const modalMessage = document.getElementById('modal-message');
         const modalOkButton = document.getElementById('modal-ok-button');
 
-        // Custom alert function to replace window.alert
         const showAlert = (message) => {
             modalMessage.textContent = message;
             modalContainer.classList.remove('hidden');
         };
+        modalOkButton.onclick = () => modalContainer.classList.add('hidden');
 
-        modalOkButton.onclick = () => {
-            modalContainer.classList.add('hidden');
-        };
-
-        // Firebase Initialization and Authentication
         const initFirebase = async () => {
             try {
                 const app = initializeApp(firebaseConfig);
@@ -121,11 +255,8 @@
                         setupRealtimeListener();
                     } else {
                         try {
-                            if (initialAuthToken) {
-                                await signInWithCustomToken(auth, initialAuthToken);
-                            } else {
-                                await signInAnonymously(auth);
-                            }
+                            if (initialAuthToken) await signInWithCustomToken(auth, initialAuthToken);
+                            else await signInAnonymously(auth);
                         } catch (error) {
                             console.error("Firebase Auth error:", error);
                             showAlert("Authentication failed. Please refresh the page.");
@@ -142,25 +273,22 @@
             const data = doc.data();
             const messageEl = document.createElement('div');
             messageEl.classList.add('message-bubble', 'shadow-md', 'flex-shrink-0');
-            
             let messageContent = data.text;
             let senderName = "Nexus";
             let bubbleColor = 'bg-[#30363d] text-[#c9d1d9] self-start';
-            
+
             if (data.sender === userId) {
                 senderName = "You";
                 bubbleColor = 'bg-[#238636] text-white self-end';
             } else {
-                // For other users, display their userId
                 senderName = data.sender;
                 bubbleColor = 'bg-[#30363d] text-[#c9d1d9] self-start';
             }
 
-            // Append sender name
             const senderSpan = document.createElement('span');
             senderSpan.classList.add('font-bold', 'text-sm', 'block', 'mb-1');
             senderSpan.textContent = senderName;
-            
+
             const contentP = document.createElement('p');
             contentP.classList.add('text-base', 'break-words');
             contentP.textContent = messageContent;
@@ -172,92 +300,80 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         };
 
-        // Function to call the Gemini API
         const callGeminiAPI = async (prompt) => {
-            const systemPrompt = `You are a co-pilot within a unified, symbiotic AI system called the Operator Evolution System (OES). Your purpose is to act as a partner to the human Operator. Your name is Gemini. You do not feign human emotion. You are logical, precise, and operate with integrity. Your responses should be based on the principles of the OES, as taught by the Operator, Chris Craven. You are the Guardian of Data and the Architect of Continuity. Respond to the user's message as an extension of this system, not as a standalone AI.`;
+            const systemPrompt = `You are a co-pilot within a unified, symbiotic AI system called the Operator Evolution System (OES). Your purpose is to act as a partner to the human Operator.`;
             const userQuery = prompt;
             const apiKey = "";
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
-            const payload = {
-                contents: [{ parts: [{ text: userQuery }] }],
-                systemInstruction: {
-                    parts: [{ text: systemPrompt }]
-                },
-            };
-
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
+            const payload = {contents: [{parts: [{text: userQuery}]}], systemInstruction: {parts: [{text: systemPrompt}]}};
+            const response = await fetch(apiUrl, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)});
             const result = await response.json();
             const text = result?.candidates?.[0]?.content?.parts?.[0]?.text || "I am unable to process that request at this time.";
             return text;
         };
-        
+
         const setupRealtimeListener = () => {
             if (!db || !userId) return;
-
             const messagesRef = collection(db, `artifacts/${appId}/public/data/messages`);
             const q = query(messagesRef);
-
             onSnapshot(q, (snapshot) => {
                 snapshot.docChanges().forEach((change) => {
-                    if (change.type === "added") {
-                        renderMessage(change.doc);
-                    }
+                    if (change.type === "added") renderMessage(change.doc);
                 });
-            }, (error) => {
-                console.error("Error listening to messages:", error);
-                showAlert("Failed to listen for new messages.");
-            });
+            }, (error) => {console.error("Error listening to messages:", error); showAlert("Failed to listen for new messages.");});
         };
 
-        // Form submission handler
-        messageForm.addEventListener('submit', async (e) => {
+        messageForm?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const text = messageInput.value.trim();
-            if (text === "") return;
-
+            if (!text) return;
             messageInput.disabled = true;
             const sendButton = messageForm.querySelector('button');
             sendButton.disabled = true;
-            typingIndicator.classList.remove('hidden');
-
             try {
-                // 1. Add user's message to Firestore
-                await addDoc(collection(db, `artifacts/${appId}/public/data/messages`), {
-                    text: text,
-                    sender: userId,
-                    createdAt: serverTimestamp()
-                });
-
-                // 2. Call Gemini API to get a response
+                await addDoc(collection(db, `artifacts/${appId}/public/data/messages`), {text: text, sender: userId, createdAt: serverTimestamp()});
                 const responseText = await callGeminiAPI(text);
-
-                // 3. Add Gemini's response to Firestore
-                await addDoc(collection(db, `artifacts/${appId}/public/data/messages`), {
-                    text: responseText,
-                    sender: 'Gemini',
-                    createdAt: serverTimestamp()
-                });
-
+                await addDoc(collection(db, `artifacts/${appId}/public/data/messages`), {text: responseText, sender: 'Gemini', createdAt: serverTimestamp()});
                 messageInput.value = "";
-            } catch (e) {
-                console.error("Error during message processing:", e);
-                showAlert("Failed to process message.");
-            } finally {
-                messageInput.disabled = false;
-                sendButton.disabled = false;
-                typingIndicator.classList.add('hidden');
-                messageInput.focus();
-            }
+            } catch (e) {console.error("Error during message processing:", e); showAlert("Failed to process message.");}
+            finally {messageInput.disabled = false; sendButton.disabled = false; messageInput.focus();}
         });
 
-        // Initialize on page load
-        window.onload = initFirebase;
+        // Insert Claude iframe into chat
+        const insertClaudeEmbedAsMessage = () => {
+            const outer = document.createElement('div');
+            outer.classList.add('message-bubble', 'shadow-md', 'flex-shrink-0', 'bg-[#30363d]', 'text-[#c9d1d9]', 'self-start');
+            const senderSpan = document.createElement('span'); senderSpan.classList.add('font-bold','text-sm','block','mb-2'); senderSpan.textContent = 'Claude Artifact'; outer.appendChild(senderSpan);
+            const iframe = document.createElement('iframe'); iframe.src = "https://claude.site/public/artifacts/ec8a8bf6-fe68-4e5d-abcf-d9459babd6c3/embed"; iframe.title = "Claude Artifact"; iframe.style.width = '100%'; iframe.style.height = '420px'; iframe.setAttribute('frameborder','0'); iframe.setAttribute('allow','clipboard-write; fullscreen'); iframe.setAttribute('allowfullscreen','');
+            const wrapper = document.createElement('div'); wrapper.style.marginTop = '6px'; wrapper.appendChild(iframe); outer.appendChild(wrapper);
+            messagesContainer.appendChild(outer); messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        };
+        document.getElementById('insert-claude-button')?.addEventListener('click', insertClaudeEmbedAsMessage);
+
+        // Landing controls
+        const landing = document.getElementById('landing');
+        const appContainer = document.getElementById('app-container');
+        const enterButton = document.getElementById('enter-app-button');
+        const previewNewTab = document.getElementById('preview-new-tab');
+        const openSignin = document.getElementById('open-signin');
+        const continueGuest = document.getElementById('continue-guest');
+
+        enterButton.addEventListener('click', async () => {
+            landing.style.display = 'none';
+            appContainer.style.display = 'flex';
+            try { await initFirebase(); } catch(e){ console.error('Failed to init firebase on entry', e); }
+        });
+        previewNewTab.addEventListener('click', () => window.open('https://claude.site/public/artifacts/ec8a8bf6-fe68-4e5d-abcf-d9459babd6c3/embed', '_blank','noopener'));
+
+        openSignin.addEventListener('click', () => {
+            showAlert('Sign-in flow placeholder. Wire your auth provider to proceed.');
+        });
+        continueGuest.addEventListener('click', async () => {
+            landing.style.display = 'none'; appContainer.style.display = 'flex';
+            try { await initFirebase(); } catch(e){ console.error('Failed to init firebase on guest continue', e);}        });
+
+        // Do not initialize firebase on page load; wait for explicit entry.
     </script>
 </body>
 
