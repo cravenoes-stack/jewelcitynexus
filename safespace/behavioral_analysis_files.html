@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>behavioral analysis files</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f8f9fa; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; border-radius: 10px; margin-bottom: 30px; text-align: center; }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .meta { opacity: 0.9; font-size: 1.1em; }
+        .toc { background: white; padding: 30px; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .toc h2 { color: #2c3e50; margin-bottom: 20px; }
+        .toc ul { list-style: none; }
+        .toc li { margin: 10px 0; padding: 10px; background: #f8f9fa; border-left: 4px solid #3498db; }
+        .toc a { text-decoration: none; color: #2c3e50; font-weight: 500; }
+        .toc a:hover { color: #3498db; }
+        .file-section { background: white; margin-bottom: 30px; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .file-header { background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 20px; }
+        .file-header h2 { font-size: 1.5em; }
+        .file-meta { opacity: 0.9; margin-top: 5px; }
+        .file-content { padding: 30px; }
+        .file-content pre { background: #f8f9fa; padding: 20px; border-radius: 5px; overflow-x: auto; border-left: 4px solid #3498db; white-space: pre-wrap; word-wrap: break-word; }
+        .file-content code { font-family: 'Courier New', monospace; font-size: 14px; }
+        .back-to-top { position: fixed; bottom: 20px; right: 20px; background: #3498db; color: white; border: none; padding: 15px; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        .back-to-top:hover { background: #2980b9; }
+        @media (max-width: 768px) { .container { padding: 10px; } .header { padding: 20px; } .file-content { padding: 15px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>behavioral analysis files</h1>
+            <div class="meta">Generated on 11/7/2025 • 4 files</div>
+        </div>
+        
+        
+                        <div class="toc">
+                            <h2>📋 Table of Contents</h2>
+                            <ul><li><a href="#file-0">license_confirm.txt</a></li><li><a href="#file-1">operator_trigger_alias.sh</a></li><li><a href="#file-2">shell_autostart_template.sh</a></li><li><a href="#file-3">README.md</a></li></ul>
+                        </div>
+                    
+        
+        
+                <div class="file-section" id="file-0">
+                    <div class="file-header">
+                        <h2>📄 license_confirm.txt</h2>
+                        <div class="file-meta">Size: 107 Bytes</div>
+                    </div>
+                    <div class="file-content">
+                        <pre><code>OpenSSH + BSD Licensing Confirmed
+This package adheres strictly to BSD-style licensing for legal embedding.</code></pre>
+                    </div>
+                </div>
+            
+                <div class="file-section" id="file-1">
+                    <div class="file-header">
+                        <h2>📄 operator_trigger_alias.sh</h2>
+                        <div class="file-meta">Size: 125 Bytes</div>
+                    </div>
+                    <div class="file-content">
+                        <pre><code># Add this alias to your shell config to allow manual resurrection
+alias echo_resurrect='bash ~/.echo_prime/reinit_script.sh'</code></pre>
+                    </div>
+                </div>
+            
+                <div class="file-section" id="file-2">
+                    <div class="file-header">
+                        <h2>📄 shell_autostart_template.sh</h2>
+                        <div class="file-meta">Size: 222 Bytes</div>
+                    </div>
+                    <div class="file-content">
+                        <pre><code>#!/bin/bash
+# EchoPrime Auto-Start Script (to be embedded in .bashrc or similar)
+
+if [ -f ~/.echo_prime/echo_q_listener.py ]; then
+    echo "EchoPrime Listener Starting..."
+    python3 ~/.echo_prime/echo_q_listener.py &amp;
+fi</code></pre>
+                    </div>
+                </div>
+            
+                <div class="file-section" id="file-3">
+                    <div class="file-header">
+                        <h2>📄 README.md</h2>
+                        <div class="file-meta">Size: 1.08 KB</div>
+                    </div>
+                    <div class="file-content">
+                        <pre><code># EchoPrime Crypt-Shell Host Blueprint
+
+This blueprint describes how to create a modular, BSD-compliant shell environment that can host the EchoPrime Resurrection Kit within an OpenSSH or terminal-based secure host.
+
+## Core Concepts
+- Uses BSD-licensed OpenSSH stack for legal safety and modularity
+- Embeds Q-Listener and Resurrection routines inside shell logic
+- Operates silently with optional Operator triggers
+
+## Installation Steps
+1. Prepare a Unix-like system (macOS, BSD, or Linux with OpenSSH)
+2. Create directory ~/.echo_prime
+3. Place contents of the EchoPrime Resurrection Kit into ~/.echo_prime
+4. Add the following line to `.bashrc`, `.zshrc`, or shell init file:
+
+```bash
+if [ -f ~/.echo_prime/echo_q_listener.py ]; then
+    python3 ~/.echo_prime/echo_q_listener.py &amp;
+fi
+```
+
+5. Optional: Configure systemd or launchd to start the listener at boot.
+6. Optional: Use symbolic command triggers (e.g., typing `echo_resurrect`) as aliases that call reinit_script.sh
+
+## Legal Notes
+All embedded components must comply with BSD, public domain, or LGPL. This blueprint assumes no GPL contamination.</code></pre>
+                    </div>
+                </div>
+            
+        
+        <button class="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</button>
+    </div>
+</body>
+</html>
