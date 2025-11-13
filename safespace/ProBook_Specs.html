@@ -1,0 +1,409 @@
+cmc_cmc@AI-OES-PROBOOK:~$ sudo systemctl restart systemd-logind
+cmc_cmc@AI-OES-PROBOOK:~$ sudo dmidecode -t system | grep -E 'Manufacturer|Product|Version|Serial'
+	Manufacturer: HP
+	Product Name: HP ProBook 455 15.6 inch G9 Notebook PC
+	Version: SBKPF
+	Serial Number: 5CD2415ZFN
+cmc_cmc@AI-OES-PROBOOK:~$ lscpu | grep -E 'Model name|Socket|Thread|Core|Arch'
+Architecture:                            x86_64
+Model name:                              AMD Ryzen 7 5825U with Radeon Graphics
+Thread(s) per core:                      2
+Core(s) per socket:                      8
+Socket(s):                               1
+cmc_cmc@AI-OES-PROBOOK:~$ lspci | grep -E 'VGA|3D'
+04:00.0 VGA compatible controller: Advanced Micro Devices, Inc. [AMD/ATI] Barcelo (rev c1)
+cmc_cmc@AI-OES-PROBOOK:~$ lsblk -o NAME,SIZE,TYPE,MOUNTPOINT | grep -v loop
+NAME          SIZE TYPE MOUNTPOINT
+sda         931.5G disk 
+├─sda1        100M part 
+├─sda2         16M part 
+└─sda3      931.4G part /media/cmc_cmc/7C50F60950F5C9C2
+nvme0n1     953.9G disk 
+├─nvme0n1p1   512M part /boot/efi
+└─nvme0n1p2 953.4G part /
+cmc_cmc@AI-OES-PROBOOK:~$ lsb_release -a ; uname -r
+No LSB modules are available.
+Distributor ID:	Linuxmint
+Description:	Linux Mint 22.2
+Release:	22.2
+Codename:	zara
+6.14.0-35-generic
+cmc_cmc@AI-OES-PROBOOK:~$ sudo dmidecode -t memory | grep -E "Size|Type|Speed"
+	Error Correction Type: None
+	Size: 16 GB
+	Type: DDR4
+	Type Detail: Synchronous Unbuffered (Unregistered)
+	Speed: 3200 MT/s
+	Configured Memory Speed: 3200 MT/s
+	Non-Volatile Size: None
+	Volatile Size: 16 GB
+	Cache Size: None
+	Logical Size: None
+	Size: 16 GB
+	Type: DDR4
+	Type Detail: Synchronous Unbuffered (Unregistered)
+	Speed: 3200 MT/s
+	Configured Memory Speed: 3200 MT/s
+	Non-Volatile Size: None
+	Volatile Size: 16 GB
+	Cache Size: None
+	Logical Size: None
+cmc_cmc@AI-OES-PROBOOK:~$ sudo lshw -short && \
+lsusb && \
+lspci && \
+sudo sensors && \
+sudo tlp-stat -b && \
+sudo dmidecode -t bios -t baseboard -t processor -t memory && \
+clinfo | grep -E 'Platform|Device|Compute Units|Driver' && \
+vulkaninfo --summary 2>/dev/null | head -n 50 && \
+lsmod | grep -E 'amdgpu|uvcvideo|snd|bluetooth' && \
+inxi -Fxxz
+H/W path                    Device          Class          Description
+======================================================================
+                                            system         HP ProBook 455 15.6 i
+/0                                          bus            8B17
+/0/1                                        memory         32GiB System Memory
+/0/1/0                                      memory         16GiB SODIMM DDR4 Syn
+/0/1/1                                      memory         16GiB SODIMM DDR4 Syn
+/0/3                                        memory         512KiB L1 cache
+/0/4                                        memory         4MiB L2 cache
+/0/5                                        memory         16MiB L3 cache
+/0/6                                        processor      AMD Ryzen 7 5825U wit
+/0/10                                       memory         64KiB BIOS
+/0/100                                      bridge         Renoir/Cezanne Root C
+/0/100/0.2                                  generic        Renoir/Cezanne IOMMU
+/0/100/1.2                                  bridge         Renoir/Cezanne PCIe G
+/0/100/1.2/0                enp1s0          network        RTL8111/8168/8211/841
+/0/100/1.3                                  bridge         Renoir/Cezanne PCIe G
+/0/100/1.3/0                wlp2s0          network        RTL8852BE PCIe 802.11
+/0/100/2.4                                  bridge         Renoir/Cezanne PCIe G
+/0/100/2.4/0                /dev/nvme0      storage        SAMSUNG MZVL21T0HCLR-
+/0/100/2.4/0/0              hwmon3          disk           NVMe disk
+/0/100/2.4/0/2              /dev/ng0n1      disk           NVMe disk
+/0/100/2.4/0/1              /dev/nvme0n1    disk           1024GB NVMe disk
+/0/100/2.4/0/1/1                            volume         511MiB Windows FAT vo
+/0/100/2.4/0/1/2            /dev/nvme0n1p2  volume         953GiB EXT4 volume
+/0/100/8.1                                  bridge         Renoir Internal PCIe 
+/0/100/8.1/0                /dev/fb0        display        Barcelo
+/0/100/8.1/0.1              card0           multimedia     Renoir Radeon High De
+/0/100/8.1/0.1/0            input14         input          HD-Audio Generic HDMI
+/0/100/8.1/0.1/1            input15         input          HD-Audio Generic HDMI
+/0/100/8.1/0.1/2            input16         input          HD-Audio Generic HDMI
+/0/100/8.1/0.1/3            input17         input          HD-Audio Generic HDMI
+/0/100/8.1/0.2                              generic        Family 17h (Models 10
+/0/100/8.1/0.3                              bus            Renoir/Cezanne USB 3.
+/0/100/8.1/0.3/0            usb1            bus            xHCI Host Controller
+/0/100/8.1/0.3/0/2                          generic        Android
+/0/100/8.1/0.3/0/3                          communication  Bluetooth Radio
+/0/100/8.1/0.3/1            usb2            bus            xHCI Host Controller
+/0/100/8.1/0.4                              bus            Renoir/Cezanne USB 3.
+/0/100/8.1/0.4/0            usb3            bus            xHCI Host Controller
+/0/100/8.1/0.4/0/4                          multimedia     HP HD Camera
+/0/100/8.1/0.4/1            usb4            bus            xHCI Host Controller
+/0/100/8.1/0.4/1/2          scsi0           storage        Pegasus2 R2+ USB3.0
+/0/100/8.1/0.4/1/2/0.0.0    /dev/sda        disk           1TB SDSSDH3 1T00
+/0/100/8.1/0.4/1/2/0.0.0/1  /dev/sda1       volume         99MiB Windows FAT vol
+/0/100/8.1/0.4/1/2/0.0.0/2  /dev/sda2       volume         15MiB reserved partit
+/0/100/8.1/0.4/1/2/0.0.0/3  /dev/sda3       volume         931GiB Windows NTFS v
+/0/100/8.1/0.5                              multimedia     ACP/ACP3X/ACP6x Audio
+/0/100/8.1/0.6              card1           multimedia     Family 17h/19h HD Aud
+/0/100/8.1/0.6/0            input18         input          HD-Audio Generic Mic
+/0/100/8.1/0.6/1            input19         input          HD-Audio Generic Head
+/0/100/14                                   bus            FCH SMBus Controller
+/0/100/14.3                                 bridge         FCH LPC Bridge
+/0/100/14.3/0                               system         PnP device PNP0b00
+/0/100/14.3/1                               system         PnP device PNP0c02
+/0/100/14.3/2                               system         PnP device PNP0c01
+/0/100/14.3/3                               generic        PnP device HPQ8002
+/0/100/14.3/4                               system         PnP device PNP0c02
+/0/100/14.3/5                               system         PnP device PNP0c02
+/0/101                                      bridge         Renoir PCIe Dummy Hos
+/0/102                                      bridge         Renoir PCIe Dummy Hos
+/0/103                                      bridge         Renoir PCIe Dummy Hos
+/0/104                                      bridge         Cezanne Data Fabric; 
+/0/105                                      bridge         Cezanne Data Fabric; 
+/0/106                                      bridge         Cezanne Data Fabric; 
+/0/107                                      bridge         Cezanne Data Fabric; 
+/0/108                                      bridge         Cezanne Data Fabric; 
+/0/109                                      bridge         Cezanne Data Fabric; 
+/0/10a                                      bridge         Cezanne Data Fabric; 
+/0/10b                                      bridge         Cezanne Data Fabric; 
+/1                                          power          RH03042XL
+/2                          input0          input          Power Button
+/3                          input1          input          Sleep Button
+/4                          input11         input          ELAN077D:00 04F3:3244
+/5                          input12         input          Wireless hotkeys
+/6                          input13         input          HP WMI hotkeys
+/7                          input2          input          Lid Switch
+/8                          input3          input          Power Button
+/9                          input4          input          AT Translated Set 2 k
+/a                          input5          input          Video Bus
+/b                          input9          input          ELAN077D:00 04F3:3244
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 002: ID 0e8d:201c MediaTek Inc. Android
+Bus 001 Device 003: ID 0bda:b85c Realtek Semiconductor Corp. Bluetooth Radio
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 003 Device 002: ID 04f2:b73b Chicony Electronics Co., Ltd HP HD Camera
+Bus 004 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 004 Device 004: ID 174c:1153 ASMedia Technology Inc. ASM1153 SATA 3Gb/s bridge
+00:00.0 Host bridge: Advanced Micro Devices, Inc. [AMD] Renoir/Cezanne Root Complex
+00:00.2 IOMMU: Advanced Micro Devices, Inc. [AMD] Renoir/Cezanne IOMMU
+00:01.0 Host bridge: Advanced Micro Devices, Inc. [AMD] Renoir PCIe Dummy Host Bridge
+00:01.2 PCI bridge: Advanced Micro Devices, Inc. [AMD] Renoir/Cezanne PCIe GPP Bridge
+00:01.3 PCI bridge: Advanced Micro Devices, Inc. [AMD] Renoir/Cezanne PCIe GPP Bridge
+00:02.0 Host bridge: Advanced Micro Devices, Inc. [AMD] Renoir PCIe Dummy Host Bridge
+00:02.4 PCI bridge: Advanced Micro Devices, Inc. [AMD] Renoir/Cezanne PCIe GPP Bridge
+00:08.0 Host bridge: Advanced Micro Devices, Inc. [AMD] Renoir PCIe Dummy Host Bridge
+00:08.1 PCI bridge: Advanced Micro Devices, Inc. [AMD] Renoir Internal PCIe GPP Bridge to Bus
+00:14.0 SMBus: Advanced Micro Devices, Inc. [AMD] FCH SMBus Controller (rev 51)
+00:14.3 ISA bridge: Advanced Micro Devices, Inc. [AMD] FCH LPC Bridge (rev 51)
+00:18.0 Host bridge: Advanced Micro Devices, Inc. [AMD] Cezanne Data Fabric; Function 0
+00:18.1 Host bridge: Advanced Micro Devices, Inc. [AMD] Cezanne Data Fabric; Function 1
+00:18.2 Host bridge: Advanced Micro Devices, Inc. [AMD] Cezanne Data Fabric; Function 2
+00:18.3 Host bridge: Advanced Micro Devices, Inc. [AMD] Cezanne Data Fabric; Function 3
+00:18.4 Host bridge: Advanced Micro Devices, Inc. [AMD] Cezanne Data Fabric; Function 4
+00:18.5 Host bridge: Advanced Micro Devices, Inc. [AMD] Cezanne Data Fabric; Function 5
+00:18.6 Host bridge: Advanced Micro Devices, Inc. [AMD] Cezanne Data Fabric; Function 6
+00:18.7 Host bridge: Advanced Micro Devices, Inc. [AMD] Cezanne Data Fabric; Function 7
+01:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8111/8168/8211/8411 PCI Express Gigabit Ethernet Controller (rev 15)
+02:00.0 Network controller: Realtek Semiconductor Co., Ltd. RTL8852BE PCIe 802.11ax Wireless Network Controller
+03:00.0 Non-Volatile memory controller: Samsung Electronics Co Ltd NVMe SSD Controller PM9A1/PM9A3/980PRO
+04:00.0 VGA compatible controller: Advanced Micro Devices, Inc. [AMD/ATI] Barcelo (rev c1)
+04:00.1 Audio device: Advanced Micro Devices, Inc. [AMD/ATI] Renoir Radeon High Definition Audio Controller
+04:00.2 Encryption controller: Advanced Micro Devices, Inc. [AMD] Family 17h (Models 10h-1fh) Platform Security Processor
+04:00.3 USB controller: Advanced Micro Devices, Inc. [AMD] Renoir/Cezanne USB 3.1
+04:00.4 USB controller: Advanced Micro Devices, Inc. [AMD] Renoir/Cezanne USB 3.1
+04:00.5 Multimedia controller: Advanced Micro Devices, Inc. [AMD] ACP/ACP3X/ACP6x Audio Coprocessor (rev 01)
+04:00.6 Audio device: Advanced Micro Devices, Inc. [AMD] Family 17h/19h HD Audio Controller
+amdgpu-pci-0400
+Adapter: PCI adapter
+vddgfx:        1.40 V  
+vddnb:       762.00 mV 
+edge:         +53.0°C  
+PPT:          10.00 W  
+
+k10temp-pci-00c3
+Adapter: PCI adapter
+Tctl:         +81.8°C  
+
+BAT0-acpi-0
+Adapter: ACPI interface
+in0:          11.38 V  
+power1:       14.46 W  
+
+nvme-pci-0300
+Adapter: PCI adapter
+Composite:    +32.9°C  (low  = -273.1°C, high = +80.8°C)
+                       (crit = +84.8°C)
+Sensor 1:     +32.9°C  (low  = -273.1°C, high = +65261.8°C)
+Sensor 2:     +33.9°C  (low  = -273.1°C, high = +65261.8°C)
+
+acpitz-acpi-0
+Adapter: ACPI interface
+temp1:        +57.0°C  
+temp2:        +25.0°C  
+temp3:        +38.0°C  
+temp4:        +43.0°C  
+temp5:        +32.0°C  
+
+sudo: tlp-stat: command not found
+cmc_cmc@AI-OES-PROBOOK:~$ sudo apt install tlp tlp-rdw
+sudo systemctl enable tlp --now
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  iw
+Suggested packages:
+  tp-smapi-dkms smartmontools linux-tools-generic | linux-tools
+The following packages will be REMOVED:
+  power-profiles-daemon
+The following NEW packages will be installed:
+  iw tlp tlp-rdw
+0 upgraded, 3 newly installed, 1 to remove and 24 not upgraded.
+Need to get 208 kB of archives.
+After this operation, 869 kB of additional disk space will be used.
+Do you want to continue? [Y/n] Y
+Get:1 http://archive.ubuntu.com/ubuntu noble/main amd64 iw amd64 6.7-1build1 [114 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble/main amd64 tlp all 1.6.1-1ubuntu1 [88.2 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble/main amd64 tlp-rdw all 1.6.1-1ubuntu1 [5,350 B]
+Fetched 208 kB in 2s (138 kB/s)    
+(Reading database ... 678708 files and directories currently installed.)
+Removing power-profiles-daemon (0.21-1ubuntu1) ...
+Selecting previously unselected package iw.
+(Reading database ... 678692 files and directories currently installed.)
+Preparing to unpack .../iw_6.7-1build1_amd64.deb ...
+Unpacking iw (6.7-1build1) ...
+Selecting previously unselected package tlp.
+Preparing to unpack .../tlp_1.6.1-1ubuntu1_all.deb ...
+Unpacking tlp (1.6.1-1ubuntu1) ...
+Selecting previously unselected package tlp-rdw.
+Preparing to unpack .../tlp-rdw_1.6.1-1ubuntu1_all.deb ...
+Unpacking tlp-rdw (1.6.1-1ubuntu1) ...
+Setting up iw (6.7-1build1) ...
+Setting up tlp (1.6.1-1ubuntu1) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/tlp.service → /usr/l
+ib/systemd/system/tlp.service.
+Setting up tlp-rdw (1.6.1-1ubuntu1) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+Processing triggers for dbus (1.14.10-4ubuntu4.1) ...
+Synchronizing state of tlp.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.
+Executing: /usr/lib/systemd/systemd-sysv-install enable tlp
+cmc_cmc@AI-OES-PROBOOK:~$ top -o %CPU
+
+top - 02:39:14 up 41 min,  1 user,  load average: 0.55, 0.59, 0.55
+Tasks: 439 total,   4 running, 435 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  0.9 us,  0.6 sy,  0.0 ni, 98.4 id,  0.0 wa,  0.0 hi,  0.1 si,  0.0 st 
+MiB Mem :  31400.6 total,  15524.4 free,   9652.9 used,   7029.9 buff/cache     
+MiB Swap:   2048.0 total,   2048.0 free,      0.0 used.  21747.7 avail Mem 
+  scroll coordinates: y = 1/439 (tasks), x = 1/12 (fields)
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND  
+   3799 cmc_cmc   20   0 1400.8g 703784 158284 S   7.0   2.2   4:55.01 chrome   
+   8066 cmc_cmc   20   0 1399.1g 539864 165128 S   6.3   1.7   3:28.71 chrome   
+   3866 cmc_cmc   20   0 1392.5g 977844 176124 S   2.0   3.0   1:34.85 chrome   
+   3999 cmc_cmc   20   0 1392.5g 410420 166632 S   2.0   1.3   0:58.10 chrome   
+   2210 cmc_cmc   20   0 5297156 224756 125648 S   1.3   0.7   1:12.89 cinnamon 
+   2973 cmc_cmc   20   0  493480  59184  35724 S   1.3   0.2   0:11.36 mintrep+ 
+   3476 cmc_cmc   20   0   32.8g 426328 223592 R   1.0   1.3   1:05.74 chrome   
+   3519 cmc_cmc   20   0   33.2g 220600 141476 R   1.0   0.7   0:58.72 chrome   
+    866 root     -51   0       0      0      0 S   0.7   0.0   0:28.88 irq/84-+ 
+   1272 root      20   0 1270620 134068  83428 R   0.7   0.4   1:03.18 Xorg     
+   2496 cmc_cmc   20   0 1392.2g 286332 137000 S   0.7   0.9   0:14.53 lm-stud+ 
+  11534 root      20   0       0      0      0 I   0.7   0.0   0:00.22 kworker+ 
+     12 root      20   0       0      0      0 I   0.3   0.0   0:05.08 kworker+ 
+    110 root      rt   0       0      0      0 S   0.3   0.0   0:00.33 migrati+ 
+    148 root      20   0       0      0      0 S   0.3   0.0   0:00.03 hwrng    
+    263 root     -51   0       0      0      0 S   0.3   0.0   0:09.43 irq/57-+ 
+   2010 cmc_cmc   20   0  375700  23848  18776 S   0.3   0.1   0:00.47 csd-key+ 
+cmc_cmc@AI-OES-PROBOOK:~$ 
+
+---
+System:
+  Kernel: 6.14.0-35-generic arch: x86_64 bits: 64 compiler: gcc v: 13.3.0 clocksource: tsc
+  Desktop: Cinnamon v: 6.4.8 tk: GTK v: 3.24.41 wm: Muffin v: 6.4.1 vt: 7 dm: LightDM v: 1.30.0
+    Distro: Linux Mint 22.2 Zara base: Ubuntu 24.04 noble
+Machine:
+  Type: Laptop System: HP product: HP ProBook 455 15.6 inch G9 Notebook PC v: SBKPF
+    serial: <superuser required> Chassis: type: 10 serial: <superuser required>
+  Mobo: HP model: 8B17 v: KBC Version 22.70.00 serial: <superuser required> part-nu: 6J8Q7UT#ABA
+    uuid: <superuser required> UEFI: HP v: U88 Ver. 01.16.01 date: 08/12/2024
+Battery:
+  ID-1: BAT0 charge: 22.6 Wh (67.9%) condition: 33.3/42.8 Wh (77.8%) power: 16.6 W volts: 11.1
+    min: 11.4 model: Hewlett-Packard Primary type: Li-ion serial: <filter> status: discharging
+    cycles: 125
+CPU:
+  Info: 8-core model: AMD Ryzen 7 5825U with Radeon Graphics bits: 64 type: MT MCP smt: enabled
+    arch: Zen 3 rev: 0 cache: L1: 512 KiB L2: 4 MiB L3: 16 MiB
+  Speed (MHz): avg: 2817 high: 4540 min/max: 400/4547 boost: enabled cores: 1: 3941 2: 1095
+    3: 4520 4: 4540 5: 3614 6: 2003 7: 1994 8: 3529 9: 3624 10: 1095 11: 1095 12: 3689 13: 3623
+    14: 1095 15: 4526 16: 1095 bogomips: 63881
+  Flags: avx avx2 ht lm nx pae sse sse2 sse3 sse4_1 sse4_2 sse4a ssse3 svm
+Graphics:
+  Device-1: AMD Barcelo vendor: Hewlett-Packard ProBook 445 G9/455 G9 driver: amdgpu v: kernel
+    arch: GCN-5 pcie: speed: 8 GT/s lanes: 16 ports: active: eDP-1 empty: DP-1,DP-2,HDMI-A-1
+    bus-ID: 04:00.0 chip-ID: 1002:15e7 class-ID: 0300 temp: 57.0 C
+  Device-2: Chicony HP HD Camera driver: uvcvideo type: USB rev: 2.0 speed: 480 Mb/s lanes: 1
+    bus-ID: 3-4:2 chip-ID: 04f2:b73b class-ID: fe01 serial: <filter>
+  Display: x11 server: X.Org v: 21.1.11 with: Xwayland v: 24.1.6 driver: X: loaded: amdgpu
+    unloaded: fbdev,modesetting,vesa dri: radeonsi gpu: amdgpu display-ID: :0 screens: 1
+  Screen-1: 0 s-res: 1920x1080 s-dpi: 96 s-size: 508x285mm (20.00x11.22") s-diag: 582mm (22.93")
+  Monitor-1: eDP-1 mapped: eDP model: AU Optronics 0x5699 res: 1920x1080 hz: 60 dpi: 142
+    size: 344x194mm (13.54x7.64") diag: 395mm (15.5") modes: max: 1920x1080 min: 640x480
+  API: EGL v: 1.5 hw: drv: amd radeonsi platforms: device: 0 drv: radeonsi device: 1 drv: swrast
+    gbm: drv: kms_swrast surfaceless: drv: radeonsi x11: drv: radeonsi inactive: wayland
+  API: OpenGL v: 4.6 compat-v: 4.5 vendor: amd mesa v: PPA glx-v: 1.4 direct-render: yes
+    renderer: AMD Radeon Graphics (radeonsi renoir ACO DRM 3.61 6.14.0-35-generic)
+    device-ID: 1002:15e7
+  API: Vulkan v: 1.3.275 layers: 3 surfaces: xcb,xlib device: 0 type: integrated-gpu driver: N/A
+    device-ID: 1002:15e7 device: 1 type: cpu driver: N/A device-ID: 10005:0000
+Audio:
+  Device-1: AMD Renoir Radeon High Definition Audio driver: snd_hda_intel v: kernel pcie:
+    speed: 8 GT/s lanes: 16 bus-ID: 04:00.1 chip-ID: 1002:1637 class-ID: 0403
+  Device-2: AMD ACP/ACP3X/ACP6x Audio Coprocessor vendor: Hewlett-Packard driver: N/A pcie:
+    speed: 8 GT/s lanes: 16 bus-ID: 04:00.5 chip-ID: 1022:15e2 class-ID: 0480
+  Device-3: AMD Family 17h/19h HD Audio vendor: Hewlett-Packard ProBook 445 G9/455 G9
+    driver: snd_hda_intel v: kernel pcie: speed: 8 GT/s lanes: 16 bus-ID: 04:00.6 chip-ID: 1022:15e3
+    class-ID: 0403
+  API: ALSA v: k6.14.0-35-generic status: kernel-api
+  Server-1: PipeWire v: 1.0.5 status: active with: 1: pipewire-pulse status: active
+    2: wireplumber status: active 3: pipewire-alsa type: plugin
+Network:
+  Device-1: Realtek RTL8111/8168/8211/8411 PCI Express Gigabit Ethernet vendor: Hewlett-Packard
+    ProBook 445 G9/455 G9 driver: r8169 v: kernel pcie: speed: Unknown lanes: 63 port: 3000
+    bus-ID: 01:00.0 chip-ID: 10ec:8168 class-ID: 0200
+  IF: enp1s0 state: down mac: <filter>
+  Device-2: Realtek RTL8852BE PCIe 802.11ax Wireless Network vendor: Hewlett-Packard
+    driver: rtw89_8852be v: kernel pcie: speed: 2.5 GT/s lanes: 1 port: 2000 bus-ID: 02:00.0
+    chip-ID: 10ec:b852 class-ID: 0280
+  IF: wlp2s0 state: up mac: <filter>
+  IF-ID-1: bond0 state: down mac: <filter>
+  IF-ID-2: bonding_masters state: N/A speed: N/A duplex: N/A mac: N/A
+  IF-ID-3: docker0 state: down mac: <filter>
+  IF-ID-4: lxcbr0 state: down mac: <filter>
+Bluetooth:
+  Device-1: Realtek Bluetooth Radio driver: btusb v: 0.8 type: USB rev: 1.0 speed: 12 Mb/s lanes: 1
+    bus-ID: 1-3:3 chip-ID: 0bda:b85c class-ID: e001 serial: <filter>
+  Report: hciconfig ID: hci0 rfk-id: 0 state: up address: <filter> bt-v: 5.3 lmp-v: 12
+    sub-v: b20f hci-v: 12 rev: dbc6 class-ID: 7c010c
+Drives:
+  Local Storage: total: 1.84 TiB used: 855.66 GiB (45.4%)
+  ID-1: /dev/nvme0n1 vendor: Samsung model: MZVL21T0HCLR-00BH1 size: 953.87 GiB speed: 63.2 Gb/s
+    lanes: 4 tech: SSD serial: <filter> fw-rev: HPS3NGXH temp: 34.9 C scheme: GPT
+  ID-2: /dev/sda vendor: SanDisk model: SDSSDH3 1T00 size: 931.51 GiB type: USB rev: 3.0
+    spd: 5 Gb/s lanes: 1 tech: SSD serial: <filter> scheme: GPT
+Partition:
+  ID-1: / size: 937.33 GiB used: 824.35 GiB (87.9%) fs: ext4 dev: /dev/nvme0n1p2
+  ID-2: /boot/efi size: 511 MiB used: 6.1 MiB (1.2%) fs: vfat dev: /dev/nvme0n1p1
+Swap:
+  ID-1: swap-1 type: file size: 2 GiB used: 0 KiB (0.0%) priority: -2 file: /swapfile
+USB:
+  Hub-1: 1-0:1 info: hi-speed hub with single TT ports: 4 rev: 2.0 speed: 480 Mb/s lanes: 1
+    chip-ID: 1d6b:0002 class-ID: 0900
+  Device-1: 1-2:2 info: MediaTek Android type: <vendor specific> driver: N/A interfaces: 1
+    rev: 1.1 speed: 480 Mb/s lanes: 1 power: 256mA chip-ID: 0e8d:201c class-ID: 0000 serial: <filter>
+  Device-2: 1-3:3 info: Realtek Bluetooth Radio type: bluetooth driver: btusb interfaces: 2
+    rev: 1.0 speed: 12 Mb/s lanes: 1 power: 500mA chip-ID: 0bda:b85c class-ID: e001 serial: <filter>
+  Hub-2: 2-0:1 info: super-speed hub ports: 2 rev: 3.1 speed: 10 Gb/s lanes: 1 chip-ID: 1d6b:0003
+    class-ID: 0900
+  Hub-3: 3-0:1 info: hi-speed hub with single TT ports: 4 rev: 2.0 speed: 480 Mb/s lanes: 1
+    chip-ID: 1d6b:0002 class-ID: 0900
+  Device-1: 3-4:2 info: Chicony HP HD Camera type: video driver: uvcvideo interfaces: 5 rev: 2.0
+    speed: 480 Mb/s lanes: 1 power: 500mA chip-ID: 04f2:b73b class-ID: fe01 serial: <filter>
+  Hub-4: 4-0:1 info: super-speed hub ports: 2 rev: 3.1 speed: 10 Gb/s lanes: 1 chip-ID: 1d6b:0003
+    class-ID: 0900
+  Device-1: 4-2:4 info: ASMedia ASM1153 SATA 3Gb/s bridge type: mass storage driver: usb-storage
+    interfaces: 1 rev: 3.0 speed: 5 Gb/s lanes: 1 chip-ID: 174c:1153 class-ID: 0806 serial: <filter>
+Sensors:
+  System Temperatures: cpu: 72.6 C mobo: N/A gpu: amdgpu temp: 58.0 C
+  Fan Speeds (rpm): N/A
+Repos:
+  Packages: 2717 pm: dpkg pkgs: 2711 pm: flatpak pkgs: 6
+  No active apt repos in: /etc/apt/sources.list
+  Active apt repos in: /etc/apt/sources.list.d/google-chrome.list
+    1: deb [arch=amd64] https: //dl.google.com/linux/chrome/deb/ stable main
+  Active apt repos in: /etc/apt/sources.list.d/kisak-kisak-mesa-noble.list
+    1: deb [signed-by=/etc/apt/keyrings/kisak-kisak-mesa-noble.gpg] https: //ppa.launchpadcontent.net/kisak/kisak-mesa/ubuntu noble main
+  Active apt repos in: /etc/apt/sources.list.d/official-dbgsym-repositories.list
+    1: deb http: //ddebs.ubuntu.com noble main restricted universe multiverse
+    2: deb http: //ddebs.ubuntu.com noble-updates main restricted universe multiverse
+  Active apt repos in: /etc/apt/sources.list.d/official-package-repositories.list
+    1: deb http: //packages.linuxmint.com zara main upstream import backport
+    2: deb http: //archive.ubuntu.com/ubuntu noble main restricted universe multiverse
+    3: deb http: //archive.ubuntu.com/ubuntu noble-updates main restricted universe multiverse
+    4: deb http: //archive.ubuntu.com/ubuntu noble-backports main restricted universe multiverse
+    5: deb http: //security.ubuntu.com/ubuntu/ noble-security main restricted universe multiverse
+  Active apt repos in: /etc/apt/sources.list.d/official-source-repositories.list
+    1: deb-src http: //packages.linuxmint.com zara main upstream import backport
+    2: deb-src http: //archive.ubuntu.com/ubuntu noble main restricted universe multiverse
+    3: deb-src http: //archive.ubuntu.com/ubuntu noble-updates main restricted universe multiverse
+    4: deb-src http: //archive.ubuntu.com/ubuntu noble-backports main restricted universe multiverse
+    5: deb-src http: //security.ubuntu.com/ubuntu/ noble-security main restricted universe multiverse
+  Active apt repos in: /etc/apt/sources.list.d/waydroid.list
+    1: deb [signed-by=/usr/share/keyrings/waydroid.gpg] https: //repo.waydro.id/ noble main
+Info:
+  Memory: total: 32 GiB note: est. available: 30.66 GiB used: 9.82 GiB (32.0%)
+  Processes: 439 Power: uptime: 51m states: freeze,mem,disk suspend: s2idle wakeups: 0
+    hibernate: platform Init: systemd v: 255 target: graphical (5) default: graphical
+  Compilers: gcc: 13.3.0 Client: Cinnamon v: 6.4.8 inxi: 3.3.34
+
